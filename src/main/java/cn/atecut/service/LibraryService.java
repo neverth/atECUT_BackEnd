@@ -25,14 +25,14 @@ public class LibraryService {
 
     private Logger logger = LogManager.getLogger(LibraryService.class);
 
-    public String getBooksByTitle(User user, String title) throws IOException {
+    public String getBooksByTitle(User user, String title, int pageCount) {
 
         JSONObject requestJson = new JSONObject();
         requestJson.put("filters", new JSONArray());
         requestJson.put("first", true);
         requestJson.put("limiter", new JSONArray());
         requestJson.put("locale", "");
-        requestJson.put("pageCount", 1);
+        requestJson.put("pageCount", pageCount);
         requestJson.put("pageSize", 20);
         requestJson.put("sortField", "relevance");
         requestJson.put("sortType", "desc");
@@ -70,5 +70,15 @@ public class LibraryService {
         }
 
         return null;
+    }
+
+    public String getBookDetailByNo(User user, String marcNo){
+
+        List<BookInfo.BookNum> result = libraryDao.getBooksNumByMarc(user, marcNo);
+        JSONObject respJson = new JSONObject();
+        respJson.put("status", 200);
+        respJson.put("message", "success");
+        respJson.put("data", result);
+        return respJson.toJSONString();
     }
 }

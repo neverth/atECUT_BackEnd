@@ -153,7 +153,12 @@ public class LibraryDao {
     }
 
 
-    private Object getBooksNumByMarc(String marcNo){
+    public List<BookInfo.BookNum> getBooksNumByMarc(User user, String marcNo){
+
+        if(!getCookies(user)){
+            return null;
+        }
+
         Request request = new Request.Builder()
                 .url("https://172-20-135-5-8080.webvpn1.ecit.cn/opac/ajax_item.php?marc_no=" + marcNo)
                 .get()
@@ -165,7 +170,7 @@ public class LibraryDao {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return processingData(2, response);
+        return (List<BookInfo.BookNum>)processingData(2, response);
     }
 
     private Object processingData(int type, Response ... responses){
