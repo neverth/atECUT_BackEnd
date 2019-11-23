@@ -79,7 +79,7 @@ public class WebVpnOneOp {
                         try {
                             String path =
 //                                    this.getClass().getResource("/").getPath()
-                                    "D:\\" + user.getNumber() + "cookies";
+                                    "D://" + user.getNumber() + "cookies";
                             fos = new FileOutputStream(path);
                             ObjectOutputStream oos = new ObjectOutputStream(fos);
                             serializableOkHttpCookies.writeObject(oos);
@@ -109,7 +109,7 @@ public class WebVpnOneOp {
         try {
             response = client.newCall(request).execute();
             htmlBody = response.body().string();
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             return false;
         }

@@ -25,7 +25,7 @@ public class LibraryService {
 
     private Logger logger = LogManager.getLogger(LibraryService.class);
 
-    public String getBooksByTitle(User user, String title, int pageCount) {
+    public String getBooksByTitle(User user, String title, int pageCount, String ... paras) {
 
         JSONObject requestJson = new JSONObject();
         requestJson.put("filters", new JSONArray());
@@ -36,6 +36,15 @@ public class LibraryService {
         requestJson.put("pageSize", 20);
         requestJson.put("sortField", "relevance");
         requestJson.put("sortType", "desc");
+        if(paras.length == 2){
+
+            if (paras[0] != null){
+                requestJson.put("sortField", paras[0]);
+            }
+            if (paras[1] != null){
+                requestJson.put("sortType", paras[1]);
+            }
+        }
 
         // fashjson竟然还不支持流式计算
         JSONArray a = new JSONArray();

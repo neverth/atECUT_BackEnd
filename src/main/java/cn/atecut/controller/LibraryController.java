@@ -29,7 +29,21 @@ public class LibraryController {
                                     HttpServletRequest httpServletRequest,
                                     HttpServletResponse httpServletResponse) {
         httpServletResponse.addHeader("Access-Control-Allow-Origin", "*");
-        return libraryService.getBooksByTitle(new User("201720180702", "ly19980911"), title, pageCount);
+
+        String sortField = httpServletRequest.getParameter("sortField");
+        String sortType = httpServletRequest.getParameter("sortType");
+
+        if(sortField== null && sortType == null){
+            return libraryService.getBooksByTitle(
+                    new User("201720180702", "ly19980911"),
+                    title,
+                    pageCount);
+        }else{
+            return libraryService.getBooksByTitle(
+                    new User("201720180702", "ly19980911"),
+                    title,
+                    pageCount, sortField, sortType);
+        }
     }
 
     @RequestMapping(value = "bookDetail/{marcNo}",

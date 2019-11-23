@@ -72,7 +72,7 @@ public class LibraryDao {
             SerializableOkHttpCookies serializableOkHttpCookies = new SerializableOkHttpCookies(null);
 
             try{
-                fis = new FileInputStream("D:\\" + user.getNumber() + "cookies");
+                fis = new FileInputStream("D://" + user.getNumber() + "cookies");
                 ois = new ObjectInputStream(fis);
                 serializableOkHttpCookies.readObject(ois);
 
