@@ -28,13 +28,15 @@ import java.util.List;
 @Repository
 public class LibraryDao {
 
-    private static Logger logger = LogManager.getLogger(WebVpnOneOp.class);
+    private static Logger logger = LogManager.getLogger(LibraryDao.class);
 
     private List<Cookie> cookieList;
 
     private static OkHttpClient client;
 
     private static int maxErrorTimes;
+
+
 
     public LibraryDao() {
 
@@ -60,6 +62,7 @@ public class LibraryDao {
 
 
     private boolean getCookies(User user){
+        logger.debug("");
         int error = 0;
         if (maxErrorTimes > 3){
             return false;
@@ -72,7 +75,7 @@ public class LibraryDao {
             SerializableOkHttpCookies serializableOkHttpCookies = new SerializableOkHttpCookies(null);
 
             try{
-                fis = new FileInputStream("D://" + user.getNumber() + "cookies");
+                fis = new FileInputStream("/atecutdata/" + user.getNumber() + "cookies");
                 ois = new ObjectInputStream(fis);
                 serializableOkHttpCookies.readObject(ois);
 

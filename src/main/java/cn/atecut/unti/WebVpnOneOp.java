@@ -79,16 +79,18 @@ public class WebVpnOneOp {
                         try {
                             String path =
 //                                    this.getClass().getResource("/").getPath()
-                                    "D://" + user.getNumber() + "cookies";
+                                    "/atecutdata/" + user.getNumber() + "cookies";
                             fos = new FileOutputStream(path);
                             ObjectOutputStream oos = new ObjectOutputStream(fos);
                             serializableOkHttpCookies.writeObject(oos);
+                            logger.debug(user.getNumber() + "cookies 文件已经写入");
                             oos.close();
                             fos.close();
                         } catch (FileNotFoundException e) {
+                            logger.debug(e.getMessage());
                             e.printStackTrace();
                         } catch (IOException e) {
-                            e.printStackTrace();
+                            logger.debug(e.getMessage());
                         }
                     }
                     @NotNull
@@ -104,7 +106,7 @@ public class WebVpnOneOp {
                 .get()
                 .build();
 
-        logger.debug("正在请求 https://webvpn1.ecit.cn/users/sign_in");
+        logger.debug("正在请求 https://webvpn1.ecit.cn/users/sign_in并解析参数");
         String htmlBody = null;
         try {
             response = client.newCall(request).execute();
@@ -113,7 +115,7 @@ public class WebVpnOneOp {
             e.printStackTrace();
             return false;
         }
-
+        logger.debug("正在请求 https://webvpn1.ecit.cn/users/sign_in并解析参数");
         Document doc = Jsoup.parse(htmlBody);
         Element formElement = doc.getElementById("login-form");
         Elements inputElements = formElement.getElementsByTag("input");
@@ -122,6 +124,7 @@ public class WebVpnOneOp {
                 webVpnOneLoginInfo.setAuthenticity_token(inputElement.attr("value"));
             }
         }
+        logger.debug("解析参数完成");
 
         if("".equals(webVpnOneLoginInfo.getAuthenticity_token())){
             return false;
@@ -148,11 +151,13 @@ public class WebVpnOneOp {
 
             try {
                 response = client.newCall(request).execute();
+                logger.debug("正在请求 https://webvpn1.ecit.cn/users/sign_in并登录");
                 if (response.body().string().contains(user.getNumber())){
                     logger.debug(user.getNumber() + " 登录成功");
                     return user.getNumber() + "cookies";
                 }
             } catch (IOException e) {
+                logger.debug("登录失败\n");
                 e.printStackTrace();
                 return null;
             }
