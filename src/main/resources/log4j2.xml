@@ -12,7 +12,7 @@ private static final Logger logger = LogManager.getLogger(实际类名.class.get
 
     <!-- 文件路径和文件名称，方便后面引用 -->
     <Properties>
-        <Property name="backupFilePatch">/atecutData/log</Property>
+        <Property name="backupFilePatch">/root/.atecut/log/</Property>
         <Property name="fileName">atecut.log</Property>
     </Properties>
     <!--先定义所有的appender-->

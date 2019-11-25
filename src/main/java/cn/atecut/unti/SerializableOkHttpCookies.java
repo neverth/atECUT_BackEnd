@@ -6,6 +6,13 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
+
+/*
+ * @author NeverTh
+ * @description 持久化cookies类
+ * @date 11:38 2019/11/25
+ */
+
 public class SerializableOkHttpCookies implements Serializable {
 
     private transient final List<Cookie> cookies;

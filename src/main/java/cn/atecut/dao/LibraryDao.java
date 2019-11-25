@@ -15,11 +15,10 @@ import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 import org.springframework.stereotype.Repository;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author 华
@@ -35,7 +34,6 @@ public class LibraryDao {
     private static OkHttpClient client;
 
     private static int maxErrorTimes;
-
 
 
     public LibraryDao() {
@@ -60,65 +58,71 @@ public class LibraryDao {
 
     }
 
-
     private boolean getCookies(User user){
-        logger.debug("");
+
         int error = 0;
+        boolean flag = false;
+
         if (maxErrorTimes > 3){
             return false;
         }
 
         if (cookieList == null){
-
-            FileInputStream fis = null;
-            ObjectInputStream ois = null;
+            logger.debug("从磁盘获取用户cookies");
             SerializableOkHttpCookies serializableOkHttpCookies = new SerializableOkHttpCookies(null);
-
+            String path = System.getProperties().getProperty("user.home")
+                    + File.separator + ".atecut" + File.separator + "cookies" + File.separator
+                    + user.getNumber() + "cookies";
             try{
-                fis = new FileInputStream("/atecutdata/" + user.getNumber() + "cookies");
-                ois = new ObjectInputStream(fis);
+                FileInputStream fis = new FileInputStream(path);
+                ObjectInputStream ois = new ObjectInputStream(fis);
                 serializableOkHttpCookies.readObject(ois);
-
                 fis.close();
                 ois.close();
             }catch (IOException | ClassNotFoundException e){
-                e.printStackTrace();
+                logger.debug(e.getMessage());
+                logger.debug("从磁盘获取cookies失败");
                 error = 1;
             }
-
             cookieList = serializableOkHttpCookies.getCookies();
         }
 
+
         Request request = new Request.Builder()
-                .url("https://172-20-135-5-8080.webvpn1.ecit.cn/opac/ajax_item.php" +
-                        "?marc_no=454936706d4f366c495a444679792f49546f795262513d3d")
+                .url("https://172-20-135-5-8080.webvpn1.ecit.cn/opac/ajax_item.php?marc_no" +
+                        "=454936706d4f366c495a444679792f49546f795262513d3d")
                 .get()
                 .build();
+
         Response response = null;
         try {
             response = client.newCall(request).execute();
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.debug(e.getMessage());
+            logger.debug("cookies有效性检查失败");
             error = 1;
-
         }
+
         String htmlBody = null;
         try {
-            htmlBody =  response.body().toString();
-
-        } catch (Exception e) {
-            e.printStackTrace();
+            htmlBody =  Objects.requireNonNull(response.body()).string();
+        } catch (NullPointerException | IOException e) {
             error = 1;
-
         }
-        if (htmlBody == null || error == 1){
+        try {
+            flag = htmlBody.contains("F275-39/3220");
+        } catch (NullPointerException e) {
+            error = 1;
+        }
+
+        if (!flag || error == 1){
+            logger.debug("cookies错误或失效，重新获取cookies");
             WebVpnOneOp webVpnOneOp = WebVpnOneOp.getInstance();
             webVpnOneOp.userLogin(user);
             maxErrorTimes ++;
-            getCookies(user);
+            flag = getCookies(user);
         }
-
-        return cookieList != null;
+        return flag;
     }
 
 
@@ -128,6 +132,7 @@ public class LibraryDao {
         if(!getCookies(user)){
             return null;
         }
+        logger.debug("用户cookies有效");
 
         MediaType JSON
                 = MediaType.get("application/json; charset=utf-8");
@@ -238,4 +243,6 @@ public class LibraryDao {
         }
         return null;
     }
+
+
 }

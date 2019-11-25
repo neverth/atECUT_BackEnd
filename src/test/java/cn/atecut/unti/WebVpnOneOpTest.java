@@ -10,6 +10,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.junit.Test;
 
+import java.io.File;
 import java.io.IOException;
 
 public class WebVpnOneOpTest {
@@ -123,4 +124,41 @@ public class WebVpnOneOpTest {
 
 
     }
+    @Test
+    public void testUserPath(){
+        String path = System.getProperties().getProperty("user.home")
+                + File.separator + ".atecut" + File.separator + "cookies" + File.separator
+                + "20cookies";
+        System.out.println(path);
+        File file = new File(path);
+        try {
+            if (!file.exists()) {
+                if(!file.getParentFile().getParentFile().exists()){
+                    file.getParentFile().getParentFile().mkdir();
+                }
+                if(!file.getParentFile().exists()){
+                    file.getParentFile().mkdir();
+                }
+                file.createNewFile();
+//                if (!file.getParentFile().getParentFile().exists()) {
+//                    file.getParentFile().getParentFile().mkdir();
+//                    if (file.getParentFile().getParentFile().exists()){
+//                        if(!file.getParentFile().exists()){
+//                            file.getParentFile().mkdir();
+//                            if(file.getParentFile().exists()){
+//                                file.createNewFile();
+//                            }
+//                        }
+//                    }
+//                }
+                if(file.exists()){
+                    System.out.println("1324");
+                }
+
+            }
+        }catch (Exception e){
+
+        }
+    }
+
 }

@@ -11,16 +11,19 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
-/**
- * @author liyang
+
+/*
+ * @author NeverTh
+ * @description webVpn1登录选项
+ * @date 11:39 2019/11/25
  */
+
 public class WebVpnOneOp {
     private volatile static WebVpnOneOp instance;
 
@@ -29,10 +32,6 @@ public class WebVpnOneOp {
     private WebVpnOneLoginInfo webVpnOneLoginInfo = new WebVpnOneLoginInfo();
 
     private OkHttpClient client;
-
-    private Request request;
-
-    private Response response;
 
     private Logger logger = LogManager.getLogger(WebVpnOneOp.class);
 
@@ -75,22 +74,36 @@ public class WebVpnOneOp {
 
                         SerializableOkHttpCookies serializableOkHttpCookies
                                 = new SerializableOkHttpCookies(cookies);
-                        FileOutputStream fos = null;
+
+                        String path = System.getProperties().getProperty("user.home")
+                                + File.separator + ".atecut" + File.separator + "cookies" + File.separator
+                                + user.getNumber() + "cookies";
+                        File file = new File(path);
                         try {
-                            String path =
-//                                    this.getClass().getResource("/").getPath()
-                                    "/atecutdata/" + user.getNumber() + "cookies";
-                            fos = new FileOutputStream(path);
+                            if(!file.exists()) {
+                                if(!file.getParentFile().getParentFile().exists()){
+                                    file.getParentFile().getParentFile().mkdir();
+                                }
+                                if(!file.getParentFile().exists()){
+                                    file.getParentFile().mkdir();
+                                }
+                                file.createNewFile();
+                            }
+                            if(!file.exists()){
+                                logger.debug("cookies文件创建失败，系统退出");
+                                System.exit(0);
+                            }
+                            FileOutputStream fos = new FileOutputStream(file);
                             ObjectOutputStream oos = new ObjectOutputStream(fos);
                             serializableOkHttpCookies.writeObject(oos);
-                            logger.debug(user.getNumber() + "cookies 文件已经写入");
+                            logger.debug("已经将用户" + user.getNumber() + "cookies写入cookies文件");
                             oos.close();
                             fos.close();
-                        } catch (FileNotFoundException e) {
-                            logger.debug(e.getMessage());
+                        }catch (IOException e) {
                             e.printStackTrace();
-                        } catch (IOException e) {
                             logger.debug(e.getMessage());
+                            logger.debug("cookies文件创建失败，系统退出");
+                            System.exit(0);
                         }
                     }
                     @NotNull
@@ -101,72 +114,81 @@ public class WebVpnOneOp {
                 })
                 .build();
 
-        request = new Request.Builder()
+        Request request = new Request.Builder()
                 .url("https://webvpn1.ecit.cn/users/sign_in")
                 .get()
                 .build();
 
-        logger.debug("正在请求 https://webvpn1.ecit.cn/users/sign_in并解析参数");
+        logger.debug("正在请求登录页面获取登录参数");
+
         String htmlBody = null;
+        Response response = null;
+
         try {
             response = client.newCall(request).execute();
-            htmlBody = response.body().string();
-        } catch (Exception e) {
+        } catch (IOException e) {
+            logger.error(e.getMessage());
+            logger.error("请求登录页面失败");
             e.printStackTrace();
             return false;
         }
-        logger.debug("正在请求 https://webvpn1.ecit.cn/users/sign_in并解析参数");
+
+        try {
+            htmlBody = Objects.requireNonNull(response.body()).string();
+        } catch (IOException | NullPointerException e) {
+            logger.error(e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+
         Document doc = Jsoup.parse(htmlBody);
         Element formElement = doc.getElementById("login-form");
         Elements inputElements = formElement.getElementsByTag("input");
         for (Element inputElement : inputElements) {
-            if (inputElement.attr("name").equals("authenticity_token")) {
+            if ("authenticity_token".equals(inputElement.attr("name"))) {
                 webVpnOneLoginInfo.setAuthenticity_token(inputElement.attr("value"));
             }
         }
-        logger.debug("解析参数完成");
 
-        if("".equals(webVpnOneLoginInfo.getAuthenticity_token())){
-            return false;
-        }
-        return true;
+        logger.debug("登录页面参数解析完成");
+
+        return webVpnOneLoginInfo.getAuthenticity_token() != null;
     }
 
     public String userLogin(User user){
-        if(getLoginInfo(user)){
 
-            RequestBody requestBody = new FormBody.Builder()
-                    .add("authenticity_token", webVpnOneLoginInfo.getAuthenticity_token())
-                    .add("commit", webVpnOneLoginInfo.getCommit())
-                    .add("user[dymatice_code]", webVpnOneLoginInfo.getDymatice_code())
-                    .add("user[password]", webVpnOneLoginInfo.getPassword())
-                    .add("user[login]", webVpnOneLoginInfo.getUsername())
-                    .add("utf8", webVpnOneLoginInfo.getUtf8())
-                    .build();
+        if (!getLoginInfo(user)) {
+            return null;
+        }
 
-            request = new Request.Builder()
-                    .url("https://webvpn1.ecit.cn/users/sign_in")
-                    .post(requestBody)
-                    .build();
+        RequestBody requestBody = new FormBody.Builder()
+                .add("authenticity_token", webVpnOneLoginInfo.getAuthenticity_token())
+                .add("commit", webVpnOneLoginInfo.getCommit())
+                .add("user[dymatice_code]", webVpnOneLoginInfo.getDymatice_code())
+                .add("user[password]", webVpnOneLoginInfo.getPassword())
+                .add("user[login]", webVpnOneLoginInfo.getUsername())
+                .add("utf8", webVpnOneLoginInfo.getUtf8())
+                .build();
 
-            try {
-                response = client.newCall(request).execute();
-                logger.debug("正在请求 https://webvpn1.ecit.cn/users/sign_in并登录");
-                if (response.body().string().contains(user.getNumber())){
-                    logger.debug(user.getNumber() + " 登录成功");
-                    return user.getNumber() + "cookies";
-                }
-            } catch (IOException e) {
-                logger.debug("登录失败\n");
-                e.printStackTrace();
-                return null;
+        Request request = new Request.Builder()
+                .url("https://webvpn1.ecit.cn/users/sign_in")
+                .post(requestBody)
+                .build();
+
+        logger.debug("请求登录页面登录");
+
+        try {
+            Response response = client.newCall(request).execute();
+            if (Objects.requireNonNull(response.body()).string().contains(user.getNumber())){
+                logger.debug(user.getNumber() + " 登录成功");
+                return user.getNumber() + "cookies";
             }
+        } catch (IOException | NullPointerException e) {
+            logger.debug("登录失败");
+            logger.debug(e.getMessage());
+            e.printStackTrace();
+            return null;
         }
         return null;
-    }
-
-    public static void main(String[] args) throws IOException {
-        WebVpnOneOp a = WebVpnOneOp.getInstance();
-        System.out.println(a.userLogin(new User("201720180702", "ly19980911")));
     }
 }
