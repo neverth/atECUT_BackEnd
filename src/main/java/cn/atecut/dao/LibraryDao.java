@@ -196,8 +196,8 @@ public class LibraryDao {
             JSONObject source = null;
             try {
                 source = JSONObject.parseObject(responses[0].body().string());
-
             } catch (Exception e) {
+                logger.debug("转换为json失败");
                 e.printStackTrace();
             }
 
@@ -216,7 +216,6 @@ public class LibraryDao {
                 return null;
             }
             List<BookInfo.BookNum> bookNumList = new ArrayList<>();
-
 
             String source = null;
             try {
