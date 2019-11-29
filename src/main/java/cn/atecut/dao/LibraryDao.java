@@ -89,8 +89,7 @@ public class LibraryDao {
 
 
         Request request = new Request.Builder()
-                .url("https://172-20-135-5-8080.webvpn1.ecit.cn/opac/ajax_item.php?marc_no" +
-                        "=454936706d4f366c495a444679792f49546f795262513d3d")
+                .url("https://172-20-135-5-8080.webvpn1.ecit.cn/opac/ajax_item.php?marc_no")
                 .get()
                 .build();
 
@@ -110,13 +109,15 @@ public class LibraryDao {
             error = 1;
         }
         try {
-            flag = htmlBody.contains("F275-39/3220");
+            flag = htmlBody.contains("书刊状态");
+            flag = true;
         } catch (NullPointerException e) {
+            logger.debug("cookies有效性检查失败，htmlBody中不包含 “书刊状态”");
             error = 1;
         }
 
         if (!flag || error == 1){
-            logger.debug("cookies错误或失效，重新获取cookies");
+            logger.debug("cookies错误或失效，重新获取cookies " + maxErrorTimes);
             WebVpnOneOp webVpnOneOp = WebVpnOneOp.getInstance();
             webVpnOneOp.userLogin(user);
             maxErrorTimes ++;
@@ -182,7 +183,7 @@ public class LibraryDao {
     }
 
     private Object processingData(int type, Response ... responses){
-
+        logger.debug("正在处理type为" + type + "responses");
         if(type == 1){
             if (responses.length != 1){
                 return null;

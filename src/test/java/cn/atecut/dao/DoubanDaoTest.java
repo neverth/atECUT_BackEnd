@@ -9,4 +9,8 @@ public class DoubanDaoTest {
         doubanDao.getBookInfoByNum(doubanDao.getNumByISBN("978-7-302-15955-1"));
 
     }
+    @Test
+    public void test(){
+        System.out.println("你妹的");
+    }
 }

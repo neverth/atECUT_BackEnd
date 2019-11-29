@@ -20,7 +20,7 @@ public class ApiTest {
                 .Builder()
                 .build();
 
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 10; i++) {
             Thread thread = new Thread(() -> {
                 while(true){
                     times.incrementAndGet();
