@@ -11,6 +11,6 @@ public class DoubanDaoTest {
     }
     @Test
     public void test(){
-        System.out.println("你妹的");
+        System.out.println(System.currentTimeMillis());
     }
 }

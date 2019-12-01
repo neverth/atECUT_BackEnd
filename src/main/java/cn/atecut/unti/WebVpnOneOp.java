@@ -12,10 +12,12 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.*;
+import java.lang.reflect.Executable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.*;
 
 
 /*
@@ -33,9 +35,16 @@ public class WebVpnOneOp {
 
     private OkHttpClient client;
 
+    private long cookiesCreatTime;
+
     private Logger logger = LogManager.getLogger(WebVpnOneOp.class);
 
+    public static boolean cookiesValid;
+
+
     private WebVpnOneOp() {
+        scheduleGetCookies();
+        cookiesMonitor();
     }
 
     public static WebVpnOneOp getInstance(){
@@ -181,6 +190,7 @@ public class WebVpnOneOp {
             Response response = client.newCall(request).execute();
             if (Objects.requireNonNull(response.body()).string().contains(user.getNumber())){
                 logger.debug(user.getNumber() + " 登录成功");
+                cookiesCreatTime = System.currentTimeMillis();
                 return user.getNumber() + "cookies";
             }
         } catch (IOException | NullPointerException e) {
@@ -190,5 +200,56 @@ public class WebVpnOneOp {
             return null;
         }
         return null;
+    }
+
+    public long getCookiesCreatTime() {
+        return cookiesCreatTime;
+    }
+
+    private void scheduleGetCookies(){
+        logger.debug("开始执行定时刷新Cookies任务");
+        ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
+        service.scheduleWithFixedDelay(()->{
+            logger.debug("开始刷新Cookies");
+            if(userLogin(new User("201720180702", "ly19980911")) != null){
+                logger.debug("Cookies刷新成功");
+                cookiesCreatTime = System.currentTimeMillis();
+                return;
+            }
+            logger.debug("Cookies刷新失败");
+        }, 55L, 55L, TimeUnit.MINUTES);
+    }
+
+    private void cookiesMonitor(){
+        logger.debug("开始监控Cookies有效性");
+
+        ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
+        service.scheduleWithFixedDelay(()->{
+
+            Request request = new Request.Builder()
+                    .url("https://172-20-135-5-8080.webvpn1.ecit.cn/opac/ajax_item.php?marc_no")
+                    .get()
+                    .build();
+
+            Response response = null;
+            try {
+                response = client.newCall(request).execute();
+            } catch (Exception e) {
+                cookiesValid = false;
+                logger.debug(e.getMessage());
+                logger.debug("Cookies可能无效");
+            }
+
+            if ((response != null ? response.code() : 0) == 200){
+                try {
+                    cookiesValid = response.body().string().contains("书刊状态");
+                    logger.debug(cookiesValid ? "Cookies有效" : "Cookies无效");
+                } catch (IOException e) {
+                    cookiesValid = false;
+                    logger.debug(e.getMessage());
+                }
+            }
+
+        }, 1L, 5L, TimeUnit.MINUTES);
     }
 }
