@@ -43,7 +43,7 @@ public class WebVpnOneOp {
 
 
     private WebVpnOneOp() {
-        scheduleGetCookies();
+//        scheduleGetCookies();
         cookiesMonitor();
     }
 
@@ -202,6 +202,30 @@ public class WebVpnOneOp {
         return null;
     }
 
+    public boolean UserSignOut(User user){
+        if (!getLoginInfo(user)) {
+            return true;
+        }
+        RequestBody requestBody = new FormBody.Builder()
+                .add("_method", "delete")
+                .build();
+
+        Request request = new Request.Builder()
+                .url("https://webvpn1.ecit.cn/users/sign_out")
+                .post(requestBody)
+                .build();
+        try {
+            Response response = client.newCall(request).execute();
+            if (response.code() == 302){
+                logger.debug(user.getNumber() + "已经注销");
+                return true;
+            }
+        } catch (IOException e) {
+            logger.debug(e.getMessage());
+        }
+        return false;
+    }
+
     public long getCookiesCreatTime() {
         return cookiesCreatTime;
     }
@@ -250,6 +274,6 @@ public class WebVpnOneOp {
                 }
             }
 
-        }, 1L, 5L, TimeUnit.MINUTES);
+        }, 30L, 30L, TimeUnit.MINUTES);
     }
 }

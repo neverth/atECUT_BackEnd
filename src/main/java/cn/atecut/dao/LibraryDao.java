@@ -66,8 +66,8 @@ public class LibraryDao {
         if (maxErrorTimes > 3){
             return false;
         }
-
-        if (cookieList == null){
+        //cookieList == null
+        if (true){
             logger.debug("从磁盘获取用户cookies");
             SerializableOkHttpCookies serializableOkHttpCookies = new SerializableOkHttpCookies(null);
             String path = System.getProperties().getProperty("user.home")
