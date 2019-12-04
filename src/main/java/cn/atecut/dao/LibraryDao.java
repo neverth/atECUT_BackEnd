@@ -2,22 +2,23 @@ package cn.atecut.dao;
 
 import cn.atecut.bean.BookInfo;
 import cn.atecut.bean.User;
-import cn.atecut.bean.model.Vpn1UserCookies;
 import cn.atecut.bean.vo.BooksInfo;
 import cn.atecut.unti.SerializableOkHttpCookies;
 import cn.atecut.unti.WebVpnOneOp;
+import com.alibaba.fastjson.JSONObject;
 import okhttp3.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
-import com.alibaba.fastjson.*;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -139,7 +140,7 @@ public class LibraryDao {
         if (!flag || error == 1){
             logger.debug("cookies错误或失效，重新获取cookies " + maxErrorTimes);
             WebVpnOneOp webVpnOneOp = WebVpnOneOp.getInstance();
-            webVpnOneOp.userLogin(user);
+//            webVpnOneOp.userLogin(user);
             maxErrorTimes ++;
             flag = getCookies(user);
         }

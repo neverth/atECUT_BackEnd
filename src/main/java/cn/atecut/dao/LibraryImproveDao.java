@@ -90,15 +90,11 @@ public class LibraryImproveDao {
                 return null;
             }
             BooksInfo booksInfo = new BooksInfo();
-            BookInfo bookInfo = new BookInfo();
             List<BookInfo> bookInfoList = new ArrayList<>();
 
-
-            JSONObject source = null;
-            String a = Objects.requireNonNull(responses[0].body()).string();
-            logger.info(a.substring(0, 50));
-            source = JSONObject.parseObject(a);
-
+            String htmlString = Objects.requireNonNull(responses[0].body()).string();
+            logger.info("正在处理type " + type +  htmlString.substring(0, 50));
+            JSONObject source = JSONObject.parseObject(htmlString);
             booksInfo.setTotal(source.getInteger("total"));
             source.getJSONArray("content").forEach((item) ->{
                 bookInfoList.add(JSONObject.parseObject(item.toString(), BookInfo.class));
@@ -114,9 +110,8 @@ public class LibraryImproveDao {
                 return null;
             }
             List<BookInfo.BookNum> bookNumList = new ArrayList<>();
-
             String source = Objects.requireNonNull(responses[0].body()).string();
-
+            logger.info("正在处理type " + type +  source.substring(0, 50));
             Document doc = Jsoup.parse(source);
             Elements trEles = doc.getElementById("item").getElementsByTag("tr");
 

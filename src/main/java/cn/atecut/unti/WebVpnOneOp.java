@@ -2,8 +2,6 @@ package cn.atecut.unti;
 
 import cn.atecut.bean.User;
 import cn.atecut.bean.WebVpnOneLoginInfo;
-import cn.atecut.bean.model.Vpn1UserCookies;
-import cn.atecut.dao.Vpn1UserCookiesDao;
 import okhttp3.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -12,15 +10,11 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.*;
-import java.lang.reflect.Executable;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.concurrent.*;
 
 
@@ -31,21 +25,20 @@ import java.util.concurrent.*;
  */
 
 public class WebVpnOneOp {
+
     private volatile static WebVpnOneOp instance;
 
     private List<Cookie> cookies = new ArrayList<>();
-
-    private WebVpnOneLoginInfo webVpnOneLoginInfo = new WebVpnOneLoginInfo();
 
     private OkHttpClient client;
 
     private Logger logger = LogManager.getLogger(WebVpnOneOp.class);
 
     private WebVpnOneOp() {
-        cookiesMonitor();
+//        cookiesMonitor();
     }
 
-    public static WebVpnOneOp getInstance(){
+    public static WebVpnOneOp getInstance() {
         if (instance == null) {
             synchronized (WebVpnOneOp.class) {
                 if (instance == null) {
@@ -56,8 +49,11 @@ public class WebVpnOneOp {
         return instance;
     }
 
-    private  boolean getLoginInfo(User user) throws IOException, NullPointerException {
+    private WebVpnOneLoginInfo getLoginInfo(User user) throws IOException, NullPointerException {
+
         logger.debug("正在请求登录页面获取登录参数");
+
+        WebVpnOneLoginInfo webVpnOneLoginInfo = new WebVpnOneLoginInfo();
         webVpnOneLoginInfo.setUtf8("✓");
         webVpnOneLoginInfo.setUsername(user.getNumber());
         webVpnOneLoginInfo.setPassword(user.getPassword());
@@ -70,49 +66,15 @@ public class WebVpnOneOp {
                     @Override
                     public void saveFromResponse(@NotNull HttpUrl httpUrl, @NotNull List<Cookie> list) {
                         List<Cookie> temp = new ArrayList<>();
-                        for(Cookie cookie : list){
-                            for (Cookie cookie1 : cookies){
-                                if (cookie.name().equals(cookie1.name())){
+                        for (Cookie cookie : list) {
+                            for (Cookie cookie1 : cookies) {
+                                if (cookie.name().equals(cookie1.name())) {
                                     temp.add(cookie1);
                                 }
                             }
                         }
                         cookies.removeAll(temp);
                         cookies.addAll(list);
-
-//                        SerializableOkHttpCookies serializableOkHttpCookies
-//                                = new SerializableOkHttpCookies(cookies);
-//
-//                        String path = System.getProperties().getProperty("user.home")
-//                                + File.separator + ".atecut" + File.separator + "cookies" + File.separator
-//                                + user.getNumber() + "cookies";
-//                        File file = new File(path);
-//                        try {
-//                            if(!file.exists()) {
-//                                if(!file.getParentFile().getParentFile().exists()){
-//                                    file.getParentFile().getParentFile().mkdir();
-//                                }
-//                                if(!file.getParentFile().exists()){
-//                                    file.getParentFile().mkdir();
-//                                }
-//                                file.createNewFile();
-//                            }
-//                            if(!file.exists()){
-//                                logger.debug("cookies文件创建失败，系统退出");
-//                                System.exit(0);
-//                            }
-//                            FileOutputStream fos = new FileOutputStream(file);
-//                            ObjectOutputStream oos = new ObjectOutputStream(fos);
-//                            serializableOkHttpCookies.writeObject(oos);
-//                            logger.debug("已经将用户" + user.getNumber() + "cookies写入cookies文件");
-//                            oos.close();
-//                            fos.close();
-//                        }catch (IOException e) {
-//                            e.printStackTrace();
-//                            logger.debug(e.getMessage());
-//                            logger.debug("cookies文件创建失败，系统退出");
-//                            System.exit(0);
-//                        }
                     }
                     @NotNull
                     @Override
@@ -137,53 +99,16 @@ public class WebVpnOneOp {
                 webVpnOneLoginInfo.setAuthenticity_token(inputElement.attr("value"));
             }
         }
-        return webVpnOneLoginInfo.getAuthenticity_token() != null;
+        return webVpnOneLoginInfo;
     }
 
-    public String userLogin(User user) throws IOException {
+    public List<Cookie> getUserValidCookies(User user) throws IOException, NullPointerException {
 
-        if (!getLoginInfo(user)) {
-            return null;
-        }
-
-        RequestBody requestBody = new FormBody.Builder()
-                .add("authenticity_token", webVpnOneLoginInfo.getAuthenticity_token())
-                .add("commit", webVpnOneLoginInfo.getCommit())
-                .add("user[dymatice_code]", webVpnOneLoginInfo.getDymatice_code())
-                .add("user[password]", webVpnOneLoginInfo.getPassword())
-                .add("user[login]", webVpnOneLoginInfo.getUsername())
-                .add("utf8", webVpnOneLoginInfo.getUtf8())
-                .build();
-
-        Request request = new Request.Builder()
-                .url("https://webvpn1.ecit.cn/users/sign_in")
-                .post(requestBody)
-                .build();
-
-        logger.debug("请求登录页面登录");
-
-        try {
-            Response response = client.newCall(request).execute();
-            if (Objects.requireNonNull(response.body()).string().contains(user.getNumber())){
-                logger.debug(user.getNumber() + " 登录成功");
-                return user.getNumber() + "cookies";
-            }
-        } catch (IOException | NullPointerException e) {
-            logger.debug("登录失败");
-            logger.debug(e.getMessage());
-            e.printStackTrace();
-            return null;
-        }
-        return null;
-    }
-
-    public List<Cookie>getUserValidCookies(User user) throws IOException {
+        logger.debug(user.getNumber() + "用户正在登陆并获取Cookies");
 
         cookies.clear();
 
-        if (!getLoginInfo(user)) {
-            return cookies;
-        }
+        WebVpnOneLoginInfo webVpnOneLoginInfo = getLoginInfo(user);
 
         RequestBody requestBody = new FormBody.Builder()
                 .add("authenticity_token", webVpnOneLoginInfo.getAuthenticity_token())
@@ -200,17 +125,15 @@ public class WebVpnOneOp {
                 .build();
 
         Response response = client.newCall(request).execute();
-        if (Objects.requireNonNull(response.body()).string().contains(user.getNumber())){
-            logger.debug(user.getNumber() + " 登录成功");
+        if (Objects.requireNonNull(response.body()).string().contains(user.getNumber())) {
+            logger.debug(user.getNumber() + " 登录成功，返回Cookies");
             return cookies;
         }
         return cookies;
     }
 
     public boolean UserSignOut(User user) throws IOException {
-        if (!getLoginInfo(user)) {
-            return true;
-        }
+
         RequestBody requestBody = new FormBody.Builder()
                 .add("_method", "delete")
                 .build();
@@ -221,7 +144,7 @@ public class WebVpnOneOp {
                 .build();
         try {
             Response response = client.newCall(request).execute();
-            if (response.code() == 302){
+            if (response.code() == 302) {
                 logger.debug(user.getNumber() + "已经注销");
                 return true;
             }
@@ -232,28 +155,21 @@ public class WebVpnOneOp {
     }
 
 
-    private void scheduleGetCookies(){
+    private void scheduleGetCookies() {
         logger.debug("开始执行定时刷新Cookies任务");
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
-        service.scheduleWithFixedDelay(()->{
+        service.scheduleWithFixedDelay(() -> {
             logger.debug("开始刷新Cookies");
-            try {
-                if(userLogin(new User("201720180702", "ly19980911")) != null){
-                    logger.debug("Cookies刷新成功");
-                    return;
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+
             logger.debug("Cookies刷新失败");
         }, 55L, 55L, TimeUnit.MINUTES);
     }
 
-    private void cookiesMonitor(){
+    private void cookiesMonitor() {
         logger.debug("开始监控Cookies有效性");
 
         ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
-        service.scheduleWithFixedDelay(()->{
+        service.scheduleWithFixedDelay(() -> {
 
             Request request = new Request.Builder()
                     .url("https://172-20-135-5-8080.webvpn1.ecit.cn/opac/ajax_item.php?marc_no")
@@ -268,7 +184,7 @@ public class WebVpnOneOp {
                 logger.debug("Cookies可能无效");
             }
 
-            if ((response != null ? response.code() : 0) == 200){
+            if ((response != null ? response.code() : 0) == 200) {
                 try {
                     logger.debug(response.body().string().contains("书刊状态") ?
                             "Cookies有效" : "Cookies无效");
@@ -278,5 +194,42 @@ public class WebVpnOneOp {
             }
 
         }, 30L, 30L, TimeUnit.MINUTES);
+    }
+
+    private void storeToDisk() {
+//        SerializableOkHttpCookies serializableOkHttpCookies
+//                = new SerializableOkHttpCookies(cookies);
+//
+//        String path = System.getProperties().getProperty("user.home")
+//                + File.separator + ".atecut" + File.separator + "cookies" + File.separator
+//                + user.getNumber() + "cookies";
+//        File file = new File(path);
+//        try {
+//            if (!file.exists()) {
+//                if (!file.getParentFile().getParentFile().exists()) {
+//                    file.getParentFile().getParentFile().mkdir();
+//                }
+//                if (!file.getParentFile().exists()) {
+//                    file.getParentFile().mkdir();
+//                }
+//                file.createNewFile();
+//            }
+//            if (!file.exists()) {
+//                logger.debug("cookies文件创建失败，系统退出");
+//                System.exit(0);
+//            }
+//            FileOutputStream fos = new FileOutputStream(file);
+//            ObjectOutputStream oos = new ObjectOutputStream(fos);
+//            serializableOkHttpCookies.writeObject(oos);
+//            logger.debug("已经将用户" + user.getNumber() + "cookies写入cookies文件");
+//            oos.close();
+//            fos.close();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//            logger.debug(e.getMessage());
+//            logger.debug("cookies文件创建失败，系统退出");
+//            System.exit(0);
+//        }
+//    }
     }
 }

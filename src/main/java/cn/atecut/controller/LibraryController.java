@@ -36,29 +36,6 @@ public class LibraryController {
 
     private static Logger logger = LogManager.getLogger(LibraryController.class);
 
-//    @RequestMapping(value = "book/{title}/{pageCount}", produces = "application/json; charset=UTF-8",
-//            method = RequestMethod.GET)
-//    public @ResponseBody
-//    String handleGetBooksByTitleApi(@PathVariable("title") String title,
-//                                    @PathVariable("pageCount") int pageCount,
-//                                    HttpServletRequest httpServletRequest) {
-//
-//        String sortField = httpServletRequest.getParameter("sortField");
-//        String sortType = httpServletRequest.getParameter("sortType");
-//
-//        if(sortField== null && sortType == null){
-//            return libraryService.getBooksByTitle(
-//                    new User("201720180702", "ly19980911"),
-//                    title,
-//                    pageCount);
-//        }else{
-//            return libraryService.getBooksByTitle(
-//                    new User("201720180702", "ly19980911"),
-//                    title,
-//                    pageCount, sortField, sortType);
-//        }
-//    }
-
     @RequestMapping(value = "book/{title}/{pageCount}",
             produces = "application/json; charset=UTF-8",
             method = RequestMethod.GET)
@@ -106,6 +83,7 @@ public class LibraryController {
                         cookies, requestJson);
             return Result.success(booksInfo);
         } catch (IOException e) {
+            logger.debug(e.getMessage());
             e.printStackTrace();
             return Result.error("服务当前不可用，稍后试试");
         }
@@ -126,38 +104,38 @@ public class LibraryController {
             bookNumList = libraryImproveService.getBookDetailByNo(cookies, marcNo);
             return Result.success(bookNumList);
         } catch (IOException e) {
+            logger.debug(e.getMessage());
             e.printStackTrace();
             return Result.error();
         }
     }
 
-    private List<Cookie> commonGetUserCookies(User user){
+    public List<Cookie> commonGetUserCookies(User user){
         List<Cookie> cookies =
                 vpn1UserCookiesService.getUserCookiesFromDataBase(user);
 
         if(!libraryImproveService.isCookiesValid(cookies)){
             List<Cookie> newCookies = null;
+
             try {
                 newCookies = vpn1UserCookiesService.getUserCookiesNew(user);
+                if(cookies.size() == 0){
+                    if(vpn1UserCookiesService.putCookiesToDataBase(user, newCookies) > 0){
+                        logger.debug("向数据库中插入cookies");
+                    }else{
+                        logger.debug("向数据库中插入cookies失败");
+                    }
+                }else{
+                    if(vpn1UserCookiesService.updateUserCookies(
+                            user, newCookies, 1) > 0){
+                        logger.debug("数据库中用户cookies已经更新");
+                    }else{
+                        logger.debug("数据库中用户cookies更新失败");
+                    }
+                }
             } catch (Exception e) {
                 logger.debug(e.getMessage());
                 return null;
-            }
-
-            if(cookies.size() == 0){
-                if(vpn1UserCookiesService.putCookiesToDataBase(
-                        user, newCookies) > 0){
-                    logger.debug("向数据库中插入cookies");
-                }else{
-                    logger.debug("向数据库中插入cookies失败");
-                }
-            }else{
-                if(vpn1UserCookiesService.updateUserCookies(
-                        user, newCookies, 1) > 0){
-                    logger.debug("数据库中用户cookies已经更新");
-                }else{
-                    logger.debug("数据库中用户cookies更新失败");
-                }
             }
             return newCookies;
         }

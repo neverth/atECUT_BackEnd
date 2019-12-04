@@ -78,7 +78,7 @@ public class LibraryService {
             if(result == null){
                 logger.debug("getBooksByTitle失败，正在重试第 " + i+1 + " 次");
                 WebVpnOneOp webVpnOneOp = WebVpnOneOp.getInstance();
-                webVpnOneOp.userLogin(user);
+//                webVpnOneOp.userLogin(user);
             }
             i++;
             if(result != null){
