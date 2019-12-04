@@ -12,6 +12,7 @@
             Java 属性名 aColumn 的类似映射。 -->
         <setting name="mapUnderscoreToCamelCase" value="true"/>
 <!--        <setting name="logImpl" value="LOG4J"/>-->
+<!--        <setting name="logImpl" value="STDOUT_LOGGING" />-->
     </settings>
 
     <plugins>

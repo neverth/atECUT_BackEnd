@@ -2,18 +2,37 @@ package cn.atecut.unti;
 
 
 import cn.atecut.bean.User;
+import cn.atecut.bean.model.Vpn1UserCookies;
 import cn.atecut.dao.LibraryDao;
+import cn.atecut.dao.Vpn1UserCookiesDao;
 import com.alibaba.fastjson.*;
+import okhttp3.Cookie;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.web.WebAppConfiguration;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.sql.Timestamp;
+import java.util.List;
 
+
+@RunWith(SpringJUnit4ClassRunner.class)
+@WebAppConfiguration
+@ContextConfiguration(locations = {"classpath*:spring/spring*.xml"})
 public class WebVpnOneOpTest {
+
+    @Autowired
+    Vpn1UserCookiesDao vpn1UserCookiesDao;
+
     @Test
     public void userLoginTest() throws IOException {
 //        ApplicationContext act =
@@ -165,4 +184,15 @@ public class WebVpnOneOpTest {
 
     }
 
+    @Test
+    public void getUserValidCookiesTest() throws UnsupportedEncodingException {
+        WebVpnOneOp a = WebVpnOneOp.getInstance();
+        List<Cookie> b =  a.getUserValidCookies(new User("201720180702", "ly19980911"));
+        Vpn1UserCookies vpn1UserCookies = new Vpn1UserCookies();
+        vpn1UserCookies.setUserNumber("201720180702");
+        vpn1UserCookies.setUserCookies(SerializableOkHttpCookies.parseCookies(b));
+        vpn1UserCookies.setCreatTime(new Timestamp(System.currentTimeMillis()));
+        vpn1UserCookies.setVersion(1);
+        vpn1UserCookiesDao.insertUserCookies(vpn1UserCookies);
+    }
 }

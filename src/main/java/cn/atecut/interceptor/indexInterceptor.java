@@ -14,6 +14,7 @@ import java.util.concurrent.atomic.AtomicLong;
 /**
  * @author liyang
  */
+
 public class indexInterceptor implements HandlerInterceptor {
 
     private static Logger logger = LogManager.getLogger(indexInterceptor.class);
@@ -32,6 +33,6 @@ public class indexInterceptor implements HandlerInterceptor {
 
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
-
+        response.addHeader("Access-Control-Allow-Origin", "*");
     }
 }

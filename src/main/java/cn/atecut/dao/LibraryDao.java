@@ -2,6 +2,7 @@ package cn.atecut.dao;
 
 import cn.atecut.bean.BookInfo;
 import cn.atecut.bean.User;
+import cn.atecut.bean.model.Vpn1UserCookies;
 import cn.atecut.bean.vo.BooksInfo;
 import cn.atecut.unti.SerializableOkHttpCookies;
 import cn.atecut.unti.WebVpnOneOp;
@@ -13,6 +14,7 @@ import com.alibaba.fastjson.*;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.io.*;
@@ -34,7 +36,6 @@ public class LibraryDao {
     private static OkHttpClient client;
 
     private static int maxErrorTimes;
-
 
     public LibraryDao() {
 
@@ -58,7 +59,26 @@ public class LibraryDao {
 
     }
 
-    private boolean getCookies(User user){
+    public LibraryDao(List<Cookie> cookies){
+
+        cookieList = cookies;
+
+        client = new OkHttpClient
+                .Builder()
+                .cookieJar(new CookieJar() {
+                    @Override
+                    public void saveFromResponse(@NotNull HttpUrl httpUrl, @NotNull List<Cookie> list) { }
+
+                    @NotNull
+                    @Override
+                    public List<Cookie> loadForRequest(@NotNull HttpUrl httpUrl) {
+                        return cookieList;
+                    }
+                })
+                .build();
+    }
+
+    private boolean getCookies(User user) throws IOException {
 
         int error = 0;
         boolean flag = false;
@@ -110,7 +130,7 @@ public class LibraryDao {
         }
         try {
             flag = htmlBody.contains("书刊状态");
-            flag = true;
+            logger.debug("htmlBody中包含 “书刊状态” = " + flag);
         } catch (NullPointerException e) {
             logger.debug("cookies有效性检查失败，htmlBody中不包含 “书刊状态”");
             error = 1;
@@ -126,9 +146,7 @@ public class LibraryDao {
         return flag;
     }
 
-
-
-    public BooksInfo getBooksByTitle(User user, JSONObject object){
+    public BooksInfo getBooksByTitle(User user, JSONObject object) throws IOException {
 
         if(!getCookies(user)){
             return null;
@@ -162,7 +180,7 @@ public class LibraryDao {
     }
 
 
-    public List<BookInfo.BookNum> getBooksNumByMarc(User user, String marcNo){
+    public List<BookInfo.BookNum> getBooksNumByMarc(User user, String marcNo) throws IOException {
 
         if(!getCookies(user)){
             return null;
@@ -196,7 +214,9 @@ public class LibraryDao {
 
             JSONObject source = null;
             try {
-                source = JSONObject.parseObject(responses[0].body().string());
+                String a = responses[0].body().string();
+                logger.info(a.substring(0, 50));
+                source = JSONObject.parseObject(a);
             } catch (Exception e) {
                 logger.debug("转换为json失败");
                 e.printStackTrace();
@@ -243,6 +263,4 @@ public class LibraryDao {
         }
         return null;
     }
-
-
 }

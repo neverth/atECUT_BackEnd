@@ -4,6 +4,7 @@ import cn.atecut.bean.BookInfo;
 import cn.atecut.bean.User;
 import cn.atecut.bean.vo.BooksInfo;
 import cn.atecut.dao.LibraryDao;
+import cn.atecut.dao.Vpn1UserCookiesDao;
 import cn.atecut.unti.WebVpnOneOp;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -20,12 +21,23 @@ import java.util.List;
 @Service
 public class LibraryService {
 
-    @Autowired
     private LibraryDao libraryDao;
+
+    private Vpn1UserCookiesDao vpn1UserCookiesDao;
 
     private Logger logger = LogManager.getLogger(LibraryService.class);
 
-    public String getBooksByTitle(User user, String title, int pageCount, String ... paras) {
+    @Autowired
+    public void setLibraryDao(LibraryDao libraryDao) {
+        this.libraryDao = libraryDao;
+    }
+
+    @Autowired
+    public void setVpn1UserCookiesDao(Vpn1UserCookiesDao vpn1UserCookiesDao) {
+        this.vpn1UserCookiesDao = vpn1UserCookiesDao;
+    }
+
+    public String getBooksByTitle(User user, String title, int pageCount, String ... paras) throws IOException {
 
         JSONObject requestJson = new JSONObject();
         requestJson.put("filters", new JSONArray());
@@ -81,7 +93,7 @@ public class LibraryService {
         return null;
     }
 
-    public String getBookDetailByNo(User user, String marcNo){
+    public String getBookDetailByNo(User user, String marcNo) throws IOException {
 
         List<BookInfo.BookNum> result = libraryDao.getBooksNumByMarc(user, marcNo);
         JSONObject respJson = new JSONObject();

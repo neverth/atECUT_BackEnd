@@ -3,7 +3,7 @@ package cn.atecut.bean.model;
 
 import lombok.Data;
 
-import java.sql.Time;
+import java.sql.Timestamp;
 
 /*
  * @author NeverTh
@@ -12,10 +12,10 @@ import java.sql.Time;
  */
 
 @Data
-public class WebVpn1UserCookies {
+public class Vpn1UserCookies {
     private int id;
     private String userNumber;
     private String userCookies;
-    private Time creatTime;
+    private Timestamp creatTime;
     private int version;
 }
