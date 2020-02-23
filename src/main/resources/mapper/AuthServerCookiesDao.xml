@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.atecut.dao.AuthServerCookiesDao" >
+
+    <resultMap id="BaseResultMap" type="cn.atecut.bean.model.AuthServerCookies" >
+        <id column="id" property="id" />
+        <result column="user_number" property="userNumber" />
+        <result column="user_cookies" property="userCookies" />
+        <result column="creat_time" property="creatTime" />
+        <result column="version" property="version" />
+    </resultMap>
+
+    <sql id="tb">authserver_user_cookies</sql>
+    <sql id="Base_Column_List">
+        (user_number, user_cookies, creat_time, version)
+    </sql>
+
+    <select id="selectAllUserCookies" resultMap="BaseResultMap">
+        select * from <include refid="tb"/>
+    </select>
+
+    <select id="selectUserCookiesByUser" resultMap="BaseResultMap"
+            parameterType="cn.atecut.bean.User">
+        select * from <include refid="tb"/>
+        <where>
+            and  user_number = #{user.number}
+        </where>
+    </select>
+
+    <insert id="insertUserCookies" parameterType="cn.atecut.bean.model.AuthServerCookies"
+            useGeneratedKeys="true" keyProperty="authServerCookies.id">
+        insert into <include refid="tb"/> <include refid="Base_Column_List"/>
+        values (#{authServerCookies.userNumber}, #{authServerCookies.userCookies},
+        #{authServerCookies.creatTime}, #{authServerCookies.version})
+    </insert>
+
+
+    <delete id="deleteUserCookies" parameterType="cn.atecut.bean.model.AuthServerCookies">
+        delete from <include refid="tb"/>
+        <where>
+            and user_number = #{authServerCookies.userNumber}
+        </where>
+    </delete>
+
+    <update id="updateUserCookies" parameterType="cn.atecut.bean.model.AuthServerCookies">
+        update <include refid="tb"></include>
+        <set>
+            user_cookies = #{authServerCookies.userCookies},
+            creat_time = #{authServerCookies.creatTime},
+            version = #{authServerCookies.version},
+        </set>
+        <where>
+            and user_number = #{user.number}
+        </where>
+    </update>
+</mapper>
