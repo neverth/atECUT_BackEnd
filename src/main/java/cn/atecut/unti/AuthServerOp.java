@@ -15,10 +15,7 @@ import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.Reader;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -119,7 +116,18 @@ public class AuthServerOp {
      */
     static private String encryptPassword(String pa1, String pwdDefaultEncryptSalt) throws IOException, ScriptException, NoSuchMethodException {
         ScriptEngine se = new ScriptEngineManager().getEngineByName("javascript");
-        Reader reader = new FileReader(new File("src/main/resources/js/aes.js"));
+        InputStream in = AuthServerOp.class.getClassLoader().getResourceAsStream("js/aes.js");
+
+        File tmp = File.createTempFile("lzq", ".tmp");
+        OutputStream os = new FileOutputStream(tmp);
+        int bytesRead = 0;
+        byte[] buffer = new byte[8192];
+        while ((bytesRead = in.read(buffer, 0, 8192)) != -1) {
+            os.write(buffer, 0, bytesRead);
+        }
+        in.close();
+
+        Reader reader = new FileReader(tmp);
         se.eval(reader);
         String res = null;
         if (se instanceof Invocable) {
@@ -163,6 +171,8 @@ public class AuthServerOp {
 
     public static void main(String[] args) throws IOException, ScriptException, NoSuchMethodException {
         AuthServerOp a = AuthServerOp.getInstance();
-        a.getUserValidCookies(new User("201720180702", "ly19980911"));
+        List<Cookie> cookies =
+                a.getUserValidCookies(new User("201720180702", "ly19980911"));
+        System.out.println(cookies);
     }
 }
