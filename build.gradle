@@ -56,6 +56,6 @@ dependencies {
 
     compile group: 'com.squareup.okhttp3', name: 'okhttp', version: '4.2.0'
     compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.11.1'
-
+    compile group: 'io.springfox', name: 'springfox-swagger2', version: '2.8.0'
 
 }

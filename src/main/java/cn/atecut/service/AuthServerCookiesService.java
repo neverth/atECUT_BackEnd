@@ -74,7 +74,7 @@ public class AuthServerCookiesService {
 
     public static void main(String[] args) {
         AuthServerCookiesService a = new AuthServerCookiesService();
-        System.out.println(a.getUserCookiesFromDataBase(new User("test", "")));
+        System.out.println(a.getUserCookiesFromDataBase(new User("201720180702", "")));
     }
 
 }
