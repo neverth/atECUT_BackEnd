@@ -5,15 +5,13 @@ import cn.atecut.bean.User;
 import cn.atecut.result.CodeMsg;
 import cn.atecut.result.Result;
 import cn.atecut.service.AuthServerCookiesService;
+import com.alibaba.fastjson.JSONObject;
 import io.swagger.annotations.Api;
 import okhttp3.Cookie;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletResponse;
+import java.util.HashMap;
 import java.util.List;
 
 @RestController
@@ -24,23 +22,41 @@ public class AuthServerController {
     @Autowired
     AuthServerCookiesService authServerCookiesService;
 
-    @PostMapping("/cookies")
-    public Result getCookiesByUserName(@RequestParam("username") String username,
-                                       @RequestParam("password") String password,
-                                    HttpServletResponse httpServletResponse) {
-        httpServletResponse.addHeader("Access-Control-Allow-Origin", "*");
+    @PostMapping("/cookies/{username}")
+    public Result getCookiesByUserName(@PathVariable("username") String username, @RequestBody String postParamsSt) {
+
+        JSONObject  postParams = JSONObject.parseObject(postParamsSt);
         List<Cookie> userCookies;
         try {
-            userCookies = authServerCookiesService.getUserCookiesFromDataBase(
-                    new User(username, password));
+            userCookies = authServerCookiesService.getUserCookies(
+                    new User(username, postParams.getString("password")));
         } catch (Exception e) {
             e.printStackTrace();
             return Result.error(CodeMsg.SERVER_ERROR);
         }
-        if (userCookies != null){
-            return Result.success(userCookies);
+
+        HashMap<String, String> newCookies = new HashMap<>();
+
+        for (Cookie _cookies: userCookies) {
+            newCookies.put(_cookies.name(), _cookies.value());
         }
 
-        return Result.success();
+        return Result.success(newCookies);
     }
+//    @PostMapping("/cookies/{username}")
+//    public Result insertCookies(@PathVariable("username") String username,
+//                                @RequestParam("password") String password) {
+//
+//
+//    }
+//    @PutMapping("/cookies/{username}")
+//    public Result updateCookies(@PathVariable("username") String username,
+//                                @RequestParam("password") String password) {
+//
+//    }
+    @DeleteMapping("/cookies/{username}")
+    public Result deleteCookies(@PathVariable("username") String username) {
+        return null;
+    }
+
 }

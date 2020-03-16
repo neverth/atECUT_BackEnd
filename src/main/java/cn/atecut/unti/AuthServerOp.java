@@ -67,7 +67,7 @@ public class AuthServerOp {
     }
 
     private AuthserverLoginInfo getLoginedCookies() throws IOException {
-
+        cookies.clear();
         AuthserverLoginInfo loginInfo = new AuthserverLoginInfo();
 
         Request request = new Request.Builder()
@@ -167,6 +167,10 @@ public class AuthServerOp {
         Response response = client.newCall(request).execute();
         String htmlBody = response.body().string();
         return cookies;
+    }
+
+    public static boolean isCookiesOk(List<Cookie> cookies){
+        return true;
     }
 
     public static void main(String[] args) throws IOException, ScriptException, NoSuchMethodException {

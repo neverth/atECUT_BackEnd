@@ -25,7 +25,21 @@ public class AuthServerCookiesService {
 
     private static Logger logger = LogManager.getLogger(AuthServerCookiesService.class);
 
-    public List<Cookie> getUserCookies(User user){
+    public List<Cookie> getUserCookies(User user) throws NoSuchMethodException, ScriptException, IOException {
+        List<Cookie> cookies = getUserCookiesFromDataBase(user);
+
+        if(cookies == null || cookies.size() == 0){
+            cookies = getUserCookiesNew(user);
+            if (cookies.size() != 4){
+                return null;
+            }
+            putCookiesToDataBase(user, cookies);
+        }
+
+        if(AuthServerOp.isCookiesOk(cookies)){
+            return cookies;
+        }
+
         return null;
     }
 
