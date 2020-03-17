@@ -28,19 +28,15 @@ public class AuthServerCookiesService {
     public List<Cookie> getUserCookies(User user) throws NoSuchMethodException, ScriptException, IOException {
         List<Cookie> cookies = getUserCookiesFromDataBase(user);
 
-        if(cookies == null || cookies.size() == 0){
+        if(cookies == null || !AuthServerOp.isCookiesOk(cookies)){
             cookies = getUserCookiesNew(user);
-            if (cookies.size() != 4){
-                return null;
+            if (cookies != null){
+                putCookiesToDataBase(user, cookies);
+                return cookies;
             }
-            putCookiesToDataBase(user, cookies);
         }
 
-        if(AuthServerOp.isCookiesOk(cookies)){
-            return cookies;
-        }
-
-        return null;
+        return cookies;
     }
 
     public List<Cookie> getUserCookiesFromDataBase(User user){
