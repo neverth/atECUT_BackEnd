@@ -43,17 +43,6 @@ public class AuthServerController {
 
         return Result.success(newCookies);
     }
-//    @PostMapping("/cookies/{username}")
-//    public Result insertCookies(@PathVariable("username") String username,
-//                                @RequestParam("password") String password) {
-//
-//
-//    }
-//    @PutMapping("/cookies/{username}")
-//    public Result updateCookies(@PathVariable("username") String username,
-//                                @RequestParam("password") String password) {
-//
-//    }
     @DeleteMapping("/cookies/{username}")
     public Result deleteCookies(@PathVariable("username") String username) {
         return null;

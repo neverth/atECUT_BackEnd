@@ -166,11 +166,35 @@ public class AuthServerOp {
 
         Response response = client.newCall(request).execute();
         String htmlBody = response.body().string();
-        return cookies;
+
+        if(AuthServerOp.isCookiesOk(cookies)){
+            return cookies;
+        }
+        return null;
     }
 
-    public static boolean isCookiesOk(List<Cookie> cookies){
-        return true;
+    public static boolean isCookiesOk(List<Cookie> cookies) throws IOException {
+        OkHttpClient client = new OkHttpClient
+                .Builder()
+                .cookieJar(new CookieJar() {
+                    @Override
+                    public void saveFromResponse(@NotNull HttpUrl httpUrl, @NotNull List<Cookie> list) { }
+                    @NotNull
+                    @Override
+                    public List<Cookie> loadForRequest(@NotNull HttpUrl httpUrl) {
+                        return cookies;
+                    }
+                })
+                .build();
+
+        Request request = new Request.Builder()
+                .url("https://authserver.ecut.edu.cn/authserver/index.do")
+                .get()
+                .build();
+
+        Response response = client.newCall(request).execute();
+        String htmlBody = response.body().string();
+        return htmlBody.contains("个人资料");
     }
 
     public static void main(String[] args) throws IOException, ScriptException, NoSuchMethodException {

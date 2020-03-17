@@ -30,7 +30,7 @@ JSONBODY
 {
     "username": "123",
     "password": "XXX",
-    "XSBH": "",
+    "XSBH": "", // 被查询学号
     "XN": "2019", // 学年
     "XQ": "1",  // 学期
     "pageSize": 10,
