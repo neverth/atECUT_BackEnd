@@ -8,7 +8,7 @@ CORS(app, supports_credentials=True)
 
 
 def getAuthServerCookies(_user):
-    resp0 = requests.post('http://neverth.fun:8080/atecut/authServer/cookies/{}'
+    resp0 = requests.post('http://127.0.0.1:8080/authServer/cookies/{}'
                           .format(_user['username'])
                           , json={"password": _user['password']})
     resp0 = json.loads(resp0.content.decode('utf-8'))

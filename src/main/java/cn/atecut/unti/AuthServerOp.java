@@ -165,10 +165,15 @@ public class AuthServerOp {
                 .build();
 
         Response response = client.newCall(request).execute();
-        String htmlBody = response.body().string();
 
         if(AuthServerOp.isCookiesOk(cookies)){
-            return cookies;
+            for (Cookie cookie: cookies) {
+                if (cookie.name().equals("CASTGC")){
+                    ArrayList<Cookie> a = new ArrayList<>();
+                    a.add(cookie);
+                    return a;
+                }
+            }
         }
         return null;
     }
@@ -185,16 +190,19 @@ public class AuthServerOp {
                         return cookies;
                     }
                 })
+                .followRedirects(false)
                 .build();
 
         Request request = new Request.Builder()
-                .url("https://authserver.ecut.edu.cn/authserver/index.do")
+                .url("https://authserver.ecut.edu.cn/authserver/login?service=https%3A%2F%2Fehall.ecut.edu.cn%3A443%2Fpsfw%2Fsys%2Fpswdkbapp%2F*default%2Findex.do")
                 .get()
                 .build();
 
         Response response = client.newCall(request).execute();
-        String htmlBody = response.body().string();
-        return htmlBody.contains("个人资料");
+
+        String  ticketUrl = response.headers().get("Location");
+
+        return ticketUrl != null;
     }
 
     public static void main(String[] args) throws IOException, ScriptException, NoSuchMethodException {

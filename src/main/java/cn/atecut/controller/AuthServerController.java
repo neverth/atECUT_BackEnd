@@ -14,6 +14,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.List;
 
+/**
+ * @author NeverTh
+ */
 @RestController
 @RequestMapping("/authServer")
 @Api(value = "authServerCookies接口", tags = "authServerCookies接口")
@@ -42,10 +45,6 @@ public class AuthServerController {
         }
 
         return Result.success(newCookies);
-    }
-    @DeleteMapping("/cookies/{username}")
-    public Result deleteCookies(@PathVariable("username") String username) {
-        return null;
     }
 
 }
