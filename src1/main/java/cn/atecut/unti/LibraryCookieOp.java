@@ -88,7 +88,7 @@ public class LibraryCookieOp {
                 .build();
         Response response = client.newCall(request).execute();
 
-        return response.code() == 200;
+        return !Objects.requireNonNull(response.body()).string().contains("Not login");
     }
 
     public static void main(String[] args) throws NoSuchMethodException, ScriptException, IOException {

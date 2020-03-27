@@ -49,8 +49,8 @@ public class UserCookieImplDao {
             case Fields.LIBRARY:
                 userCookiesStr = libraryCookieOp.getUserValidCookies(
                         student,
-                        getCookieByUserNumAndTypeNoCheck(student, Fields.AUTHSERVER).getUserCookies(),
-                        getCookieByUserNumAndTypeNoCheck(student, Fields.WEBVPN1).getUserCookies()
+                        getOkCookieByUserNumAndType(student, Fields.AUTHSERVER).getUserCookies(),
+                        getOkCookieByUserNumAndType(student, Fields.WEBVPN1).getUserCookies()
                 );
 
                 break;

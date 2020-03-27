@@ -1,17 +1,14 @@
-package cn.atecut.bean.vo;
-
+package cn.atecut.bean.po;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 /**
  * @author NeverTh
  */
 @Data
 @AllArgsConstructor
-@NoArgsConstructor
-public class BorrowBookVO {
+public class BorrowBookPO {
 
     String marcRecNo;
 
@@ -24,5 +21,4 @@ public class BorrowBookVO {
     String renewQuantity;
 
     String holdings;
-
 }

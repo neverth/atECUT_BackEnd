@@ -2,7 +2,13 @@ package cn.atecut.dao;
 
 import cn.atecut.bean.BookInfo;
 import cn.atecut.bean.User;
+import cn.atecut.bean.po.BorrowBookPO;
+import cn.atecut.bean.po.Student;
+import cn.atecut.bean.pojo.Fields;
+import cn.atecut.bean.pojo.UserCookie;
 import cn.atecut.bean.vo.BooksInfo;
+import cn.atecut.bean.vo.BorrowBookVO;
+import cn.atecut.unti.RequestUtil;
 import cn.atecut.unti.SerializableOkHttpCookies;
 import cn.atecut.unti.WebVpnOneOp;
 import com.alibaba.fastjson.JSONObject;
@@ -12,9 +18,12 @@ import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import javax.script.ScriptException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -32,236 +41,75 @@ public class LibraryDao {
 
     private static Logger logger = LogManager.getLogger(LibraryDao.class);
 
-    private List<Cookie> cookieList;
+    private OkHttpClient client = RequestUtil.getOkHttpInstanceNotRedirect();
 
-    private static OkHttpClient client;
+    @Autowired
+    private UserCookieImplDao userCookieImplDao;
 
-    private static int maxErrorTimes;
+    public List<BorrowBookPO> getBorrowBookInfo(Student student) throws NoSuchMethodException, ScriptException, IOException {
 
-    public LibraryDao() {
+        UserCookie libraryCookie = userCookieImplDao.getCookieByUserNumAndTypeNoCheck(student, Fields.LIBRARY);
 
-        cookieList = null;
-
-        maxErrorTimes = 0;
-
-        client = new OkHttpClient
-                .Builder()
-                .cookieJar(new CookieJar() {
-                    @Override
-                    public void saveFromResponse(@NotNull HttpUrl httpUrl, @NotNull List<Cookie> list) { }
-
-                    @NotNull
-                    @Override
-                    public List<Cookie> loadForRequest(@NotNull HttpUrl httpUrl) {
-                        return cookieList;
-                    }
-                })
-                .build();
-
-    }
-
-    public LibraryDao(List<Cookie> cookies){
-
-        cookieList = cookies;
-
-        client = new OkHttpClient
-                .Builder()
-                .cookieJar(new CookieJar() {
-                    @Override
-                    public void saveFromResponse(@NotNull HttpUrl httpUrl, @NotNull List<Cookie> list) { }
-
-                    @NotNull
-                    @Override
-                    public List<Cookie> loadForRequest(@NotNull HttpUrl httpUrl) {
-                        return cookieList;
-                    }
-                })
-                .build();
-    }
-
-    private boolean getCookies(User user) throws IOException {
-
-        int error = 0;
-        boolean flag = false;
-
-        if (maxErrorTimes > 3){
-            return false;
-        }
-        //cookieList == null
-        if (true){
-            logger.debug("从磁盘获取用户cookies");
-            SerializableOkHttpCookies serializableOkHttpCookies = new SerializableOkHttpCookies(null);
-            String path = System.getProperties().getProperty("user.home")
-                    + File.separator + ".atecut" + File.separator + "cookies" + File.separator
-                    + user.getNumber() + "cookies";
-            try{
-                FileInputStream fis = new FileInputStream(path);
-                ObjectInputStream ois = new ObjectInputStream(fis);
-                serializableOkHttpCookies.readObject(ois);
-                fis.close();
-                ois.close();
-            }catch (IOException | ClassNotFoundException e){
-                logger.debug(e.getMessage());
-                logger.debug("从磁盘获取cookies失败");
-                error = 1;
-            }
-            cookieList = serializableOkHttpCookies.getCookies();
+        if (libraryCookie == null){
+            libraryCookie = userCookieImplDao.getOkCookieByUserNumAndType(student, Fields.LIBRARY);
         }
 
-
-        Request request = new Request.Builder()
-                .url("https://172-20-135-5-8080.webvpn1.ecit.cn/opac/ajax_item.php?marc_no")
-                .get()
-                .build();
-
-        Response response = null;
-        try {
-            response = client.newCall(request).execute();
-        } catch (Exception e) {
-            logger.debug(e.getMessage());
-            logger.debug("cookies有效性检查失败");
-            error = 1;
-        }
-
-        String htmlBody = null;
-        try {
+        String htmlBody = "";
+        try{
+            Request request = new Request.Builder()
+                    .url("https://172-20-135-5-8080.webvpn1.ecit.cn/reader/book_lst.php")
+                    .addHeader("cookie", libraryCookie.getUserCookies())
+                    .get()
+                    .build();
+            Response response = client.newCall(request).execute();
             htmlBody =  Objects.requireNonNull(response.body()).string();
-        } catch (NullPointerException | IOException e) {
-            error = 1;
-        }
-        try {
-            flag = htmlBody.contains("书刊状态");
-            logger.debug("htmlBody中包含 “书刊状态” = " + flag);
-        } catch (NullPointerException e) {
-            logger.debug("cookies有效性检查失败，htmlBody中不包含 “书刊状态”");
-            error = 1;
+
+            if(!htmlBody.contains("注销") || response.code() != 200){
+                throw new Exception("cookies无效");
+            }
+
+        }catch (Exception e){
+            libraryCookie = userCookieImplDao.getOkCookieByUserNumAndType(student, Fields.LIBRARY);
+
+            Request request = new Request.Builder()
+                    .url("https://172-20-135-5-8080.webvpn1.ecit.cn/reader/book_lst.php")
+                    .addHeader("cookie", libraryCookie.getUserCookies())
+                    .get()
+                    .build();
+            Response response = client.newCall(request).execute();
+            htmlBody =  Objects.requireNonNull(response.body()).string();
         }
 
-        if (!flag || error == 1){
-            logger.debug("cookies错误或失效，重新获取cookies " + maxErrorTimes);
-            WebVpnOneOp webVpnOneOp = WebVpnOneOp.getInstance();
-//            webVpnOneOp.userLogin(user);
-            maxErrorTimes ++;
-            flag = getCookies(user);
+        Document doc = Jsoup.parse(htmlBody);
+        Element formElement = doc.getElementById("mylib_content");
+        Elements tableElements = formElement.getElementsByTag("table");
+
+        if (tableElements.size() == 0){
+            return new ArrayList<>();
         }
-        return flag;
+        Elements trs = tableElements.get(0).getElementsByTag("tr");
+
+
+        ArrayList<String> borrowInfo = new ArrayList<>();
+        for (Element tr : trs) {
+            Elements tds = tr.getElementsByTag("td");
+            for (Element td : tds){
+                borrowInfo.add(td.text());
+            }
+        }
+
+        List<BorrowBookPO> result = new ArrayList<>();
+        for (int i = 1; i < trs.size(); i++) {
+            result.add(new BorrowBookPO(
+                    borrowInfo.get(i * 8),
+                    borrowInfo.get(i * 8 + 1),
+                    borrowInfo.get(i * 8 + 2),
+                    borrowInfo.get(i * 8 + 3),
+                    borrowInfo.get(i * 8 + 4),
+                    borrowInfo.get(i * 8 + 5)
+            ));
+        }
+        return result;
     }
 
-    public BooksInfo getBooksByTitle(User user, JSONObject object) throws IOException {
-
-        if(!getCookies(user)){
-            return null;
-        }
-        logger.debug("用户cookies有效");
-
-        MediaType JSON
-                = MediaType.get("application/json; charset=utf-8");
-        RequestBody requestBody = RequestBody.create(object.toString(), JSON);
-        Request request = new Request.Builder()
-                .url("https://172-20-135-5-8080.webvpn1.ecit.cn/opac/ajax_search_adv.php")
-                .post(requestBody)
-                .build();
-        Response response = null;
-        String htmlBody = null;
-        try {
-            response = client.newCall(request).execute();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        BooksInfo booksInfo = (BooksInfo)processingData(1, response);
-
-//        booksInfo.getBookInfos().forEach((item)->{
-//            List<BookInfo.BookNum> bookNumList = new ArrayList<>();
-//            bookNumList = (List<BookInfo.BookNum>)getBooksNumByMarc(item.getMarcRecNo());
-//            item.setBookNums(bookNumList);
-//        });
-
-        return booksInfo;
-    }
-
-
-    public List<BookInfo.BookNum> getBooksNumByMarc(User user, String marcNo) throws IOException {
-
-        if(!getCookies(user)){
-            return null;
-        }
-
-        Request request = new Request.Builder()
-                .url("https://172-20-135-5-8080.webvpn1.ecit.cn/opac/ajax_item.php?marc_no=" + marcNo)
-                .get()
-                .build();
-        Response response = null;
-        String htmlBody = null;
-        try {
-            response = client.newCall(request).execute();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return (List<BookInfo.BookNum>)processingData(2, response);
-    }
-
-    private Object processingData(int type, Response ... responses){
-        logger.debug("正在处理type为" + type + "responses");
-        if(type == 1){
-            if (responses.length != 1){
-                return null;
-            }
-
-            BooksInfo booksInfo = new BooksInfo();
-            BookInfo bookInfo = new BookInfo();
-            List<BookInfo> bookInfoList = new ArrayList<>();
-
-
-            JSONObject source = null;
-            try {
-                String a = responses[0].body().string();
-                logger.info(a.substring(0, 50));
-                source = JSONObject.parseObject(a);
-            } catch (Exception e) {
-                logger.debug("转换为json失败");
-                e.printStackTrace();
-            }
-
-            booksInfo.setTotal(source.getInteger("total"));
-            source.getJSONArray("content").forEach((item) ->{
-                bookInfoList.add(JSONObject.parseObject(item.toString(), BookInfo.class));
-            });
-
-            booksInfo.setBookInfos(bookInfoList);
-
-            return booksInfo;
-        }
-        if(type == 2){
-
-            if (responses.length != 1){
-                return null;
-            }
-            List<BookInfo.BookNum> bookNumList = new ArrayList<>();
-
-            String source = null;
-            try {
-                source = responses[0].body().string();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-            Document doc = Jsoup.parse(source);
-            Elements trEles = doc.getElementById("item").getElementsByTag("tr");
-
-            for (int i = 1; i < trEles.size(); i++) {
-                BookInfo.BookNum bookNum = new BookInfo.BookNum();
-                Elements tdEles = trEles.get(i).select("td");
-
-                bookNum.setIndexNum(tdEles.get(0).text());
-                bookNum.setBarcode(tdEles.get(1).text());
-                bookNum.setHoldings(tdEles.get(3).text());
-                bookNum.setState(tdEles.get(4).text());
-
-                bookNumList.add(bookNum);
-            }
-            return bookNumList;
-        }
-        return null;
-    }
 }

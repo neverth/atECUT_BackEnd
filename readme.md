@@ -13,6 +13,17 @@ GET http://neverth.fun:8080/atecut/restfulApi/library/bookDetail/{marcNo}
 EX  http://neverth.fun:8080/atecut/restfulApi/library/bookDetail/53716638667671457a6f4863776950753333756e63673d3d
 
 
+**API 获得用户当前借阅信息**
+
+POST http://neverth.fun:8081/library/borrowedBooks/get
+
+JSONBODY 
+```json
+{
+    "username": "123",
+    "password": "XXX"
+}
+```
 **API 根据ISBN号获得豆瓣评分等信息**
 
 GET http://neverth.fun:8080/atecut/restfulApi/douBan/bookIsbn/{isbn}
@@ -52,4 +63,5 @@ JSONBODY
     "ZC": "", // 周次
 }
 ```
+
 
