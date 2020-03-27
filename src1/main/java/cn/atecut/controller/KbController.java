@@ -30,10 +30,11 @@ public class KbController {
 
     @RequestMapping(value = "{userid}", produces = "application/json; charset=UTF-8",
             method = RequestMethod.GET)
-    public @ResponseBody
-    String handleGetBooksByTitleApi(@PathVariable String userid,
+    @ResponseBody
+    public String handleGetBooksByTitleApi(@PathVariable String userid,
                                     HttpServletRequest httpServletRequest,
                                     HttpServletResponse httpServletResponse) throws IOException, ScriptException, NoSuchMethodException {
+        httpServletResponse.addHeader("Access-Control-Allow-Origin", "*");
 
         List<Cookie> cookies =
                 authServerCookiesService.getUserCookiesFromDataBase(new User(userid, " "));

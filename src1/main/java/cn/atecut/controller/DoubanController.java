@@ -25,6 +25,7 @@ public class DoubanController {
     String handleGetBooksByTitleApi(@PathVariable String isbn,
                                     HttpServletRequest httpServletRequest,
                                     HttpServletResponse httpServletResponse) {
+        httpServletResponse.addHeader("Access-Control-Allow-Origin", "*");
         return doubanService.getBookInfoByIsbn(isbn);
     }
 }

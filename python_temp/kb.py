@@ -172,4 +172,34 @@ def score():
 
 
 if __name__ == '__main__':
+    bb = {
+        'CASTGC': 'TGT-8917-utzqPVeoSIygC429qj3aB9e4mftEhkpldJw96yE9rnFy6raX4k1585229678635-LVAB-cas',
+        '_webvpn_key': 'eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoiMjAxNzIwMTgwNzAyIiwiaWF0IjoxNTg1MjMyNDcxLCJleHAiOjE1ODUzMTg4NzF9.u9ZkCgQZ7OvjzzRy1u-dI4MTNXQOCyhH9RScKzU77hg',
+        'webvpn_username': '201720180702%7C1585232471%7C83cc648aaf8e732fe6b796cf7991c8898aa74763'
+    }
+    headers = {
+        'Host': '172-20-135-5-8080.webvpn1.ecit.cn',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+        'Accept-Language': 'zh-CN,zh;q=0.8,zh-TW;q=0.7,zh-HK;q=0.5,en-US;q=0.3,en;q=0.2',
+        'Accept-Encoding': 'gzip, deflate, br',
+        'Connection': 'keep-alive',
+        'Cookie': 'CASTGC=TGT-8917-utzqPVeoSIygC429qj3aB9e4mftEhkpldJw96yE9rnFy6raX4k1585229678635-LVAB-cas;_webvpn_key=eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoiMjAxNzIwMTgwNzAyIiwiaWF0IjoxNTg1MjMyNDcxLCJleHAiOjE1ODUzMTg4NzF9.u9ZkCgQZ7OvjzzRy1u-dI4MTNXQOCyhH9RScKzU77hg;webvpn_username=201720180702%7C1585232471%7C83cc648aaf8e732fe6b796cf7991c8898aa74763;',
+        'Upgrade-Insecure-Requests': '1',
+    }
+    resp0 = requests.get("https://172-20-135-5-8080.webvpn1.ecit.cn/reader/book_lst.php", headers=headers, allow_redirects=False)
+    url = resp0.headers.get('Location')
+
+    resp0 = requests.get(url, headers=headers, allow_redirects=False)
+
+    url = resp0.headers.get('Location')
+
+    resp0 = requests.get(url, headers=headers, allow_redirects=False)
+
+    url = resp0.headers.get('Location')
+
+    resp0 = requests.get(url, headers=headers, allow_redirects=False)
+
+    a = resp0.content.decode('utf-8')
+    resp0 = (resp0.content.decode('utf-8'))
+    print()
     app.run(host='0.0.0.0', port=8111)
