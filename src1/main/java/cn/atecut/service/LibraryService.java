@@ -2,10 +2,12 @@ package cn.atecut.service;
 
 import cn.atecut.bean.BookInfo;
 import cn.atecut.bean.User;
+import cn.atecut.bean.po.BookPO;
 import cn.atecut.bean.po.BorrowBookPO;
 import cn.atecut.bean.po.Student;
 import cn.atecut.bean.pojo.Fields;
 import cn.atecut.bean.pojo.UserCookie;
+import cn.atecut.bean.vo.BookVO;
 import cn.atecut.bean.vo.BooksInfo;
 import cn.atecut.bean.vo.BorrowBookVO;
 import cn.atecut.dao.*;
@@ -53,5 +55,22 @@ public class LibraryService {
         }
 
         return borrowBookVOS;
+    }
+
+    public List<BookVO.BookBorrowInfo> getBooksNumByMarc(String mac) throws NoSuchMethodException, ScriptException, IOException {
+
+        List<BookPO.BookBorrowInfo> booksNumByMarc = libraryDao.getBooksNumByMarc(mac);
+        List<BookVO.BookBorrowInfo> borrowBookVOS = new ArrayList<>();
+
+        for (BookPO.BookBorrowInfo book : booksNumByMarc) {
+            BookVO.BookBorrowInfo borrowBookVO = new BookVO.BookBorrowInfo();
+            BeanUtils.copyProperties(book, borrowBookVO);
+            borrowBookVOS.add(borrowBookVO);
+        }
+        return borrowBookVOS;
+    }
+
+    public String getBooksByTitle(String reqData) throws IOException, NoSuchMethodException, ScriptException {
+        return libraryDao.getBooksByTitle(reqData);
     }
 }

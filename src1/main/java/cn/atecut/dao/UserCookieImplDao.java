@@ -4,13 +4,12 @@ package cn.atecut.dao;
 import cn.atecut.bean.User;
 import cn.atecut.bean.po.Student;
 import cn.atecut.bean.po.UserCookiePO;
-import cn.atecut.bean.po.Vpn1UserCookies;
 import cn.atecut.bean.pojo.Fields;
 import cn.atecut.bean.pojo.UserCookie;
 import cn.atecut.unti.AuthServerOp;
 import cn.atecut.unti.LibraryCookieOp;
+import cn.atecut.unti.NewJwCookieOp;
 import cn.atecut.unti.WebVpnOneOp;
-import lombok.val;
 import okhttp3.Cookie;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +29,8 @@ public class UserCookieImplDao {
         AuthServerOp authServerOp = AuthServerOp.getInstance();
         WebVpnOneOp webVpnOneOp = WebVpnOneOp.getInstance();
         LibraryCookieOp libraryCookieOp = LibraryCookieOp.getInstance();
+        NewJwCookieOp newJwCookieOp = NewJwCookieOp.getInstance();
+
         User user = new User();
 
         BeanUtils.copyProperties(student, user);
@@ -48,6 +49,15 @@ public class UserCookieImplDao {
                 break;
             case Fields.LIBRARY:
                 userCookiesStr = libraryCookieOp.getUserValidCookies(
+                        student,
+                        getOkCookieByUserNumAndType(student, Fields.AUTHSERVER).getUserCookies(),
+                        getOkCookieByUserNumAndType(student, Fields.WEBVPN1).getUserCookies()
+                );
+
+                break;
+
+            case Fields.NEWJW:
+                userCookiesStr = newJwCookieOp.getUserValidCookies(
                         student,
                         getOkCookieByUserNumAndType(student, Fields.AUTHSERVER).getUserCookies(),
                         getOkCookieByUserNumAndType(student, Fields.WEBVPN1).getUserCookies()
@@ -122,6 +132,10 @@ public class UserCookieImplDao {
                 }
             }else if (Fields.LIBRARY.equals(type)){
                 if (LibraryCookieOp.isUserCookieOk(userCookie)) {
+                    return userCookie;
+                }
+            }else if (Fields.NEWJW.equals(type)){
+                if (NewJwCookieOp.isUserCookieOk(userCookie)) {
                     return userCookie;
                 }
             }

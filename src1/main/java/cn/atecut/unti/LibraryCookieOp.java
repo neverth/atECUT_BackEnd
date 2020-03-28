@@ -1,21 +1,13 @@
 package cn.atecut.unti;
 
-import cn.atecut.bean.User;
 import cn.atecut.bean.po.Student;
-import cn.atecut.bean.pojo.Fields;
 import cn.atecut.bean.pojo.UserCookie;
-import cn.atecut.dao.AuthServerCookiesDao;
-import cn.atecut.dao.UserCookieImplDao;
-import lombok.Data;
-import lombok.ToString;
 import okhttp3.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.script.ScriptException;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
 /**

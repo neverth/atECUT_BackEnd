@@ -2,6 +2,7 @@ package cn.atecut.dao;
 
 import cn.atecut.bean.BookInfo;
 import cn.atecut.bean.User;
+import cn.atecut.bean.po.BookPO;
 import cn.atecut.bean.po.BorrowBookPO;
 import cn.atecut.bean.po.Student;
 import cn.atecut.bean.pojo.Fields;
@@ -46,7 +47,7 @@ public class LibraryDao {
     @Autowired
     private UserCookieImplDao userCookieImplDao;
 
-    public List<BorrowBookPO> getBorrowBookInfo(Student student) throws NoSuchMethodException, ScriptException, IOException {
+    private String  getResponse(Student student, String url, String effectiveSign) throws NoSuchMethodException, ScriptException, IOException {
 
         UserCookie libraryCookie = userCookieImplDao.getCookieByUserNumAndTypeNoCheck(student, Fields.LIBRARY);
 
@@ -57,14 +58,14 @@ public class LibraryDao {
         String htmlBody = "";
         try{
             Request request = new Request.Builder()
-                    .url("https://172-20-135-5-8080.webvpn1.ecit.cn/reader/book_lst.php")
+                    .url(url)
                     .addHeader("cookie", libraryCookie.getUserCookies())
                     .get()
                     .build();
             Response response = client.newCall(request).execute();
             htmlBody =  Objects.requireNonNull(response.body()).string();
 
-            if(!htmlBody.contains("注销") || response.code() != 200){
+            if(!htmlBody.contains(effectiveSign) || response.code() != 200){
                 throw new Exception("cookies无效");
             }
 
@@ -72,13 +73,62 @@ public class LibraryDao {
             libraryCookie = userCookieImplDao.getOkCookieByUserNumAndType(student, Fields.LIBRARY);
 
             Request request = new Request.Builder()
-                    .url("https://172-20-135-5-8080.webvpn1.ecit.cn/reader/book_lst.php")
+                    .url(url)
                     .addHeader("cookie", libraryCookie.getUserCookies())
                     .get()
                     .build();
             Response response = client.newCall(request).execute();
             htmlBody =  Objects.requireNonNull(response.body()).string();
         }
+        return htmlBody;
+    }
+
+    private String  postResponse(Student student,
+                                 String url,
+                                 String effectiveSign,
+                                 String postData,
+                                 boolean needNewCookie) throws NoSuchMethodException, ScriptException, IOException {
+        UserCookie libraryCookie = null;
+
+        if(needNewCookie){
+            libraryCookie = userCookieImplDao.getOkCookieByUserNumAndType(student, Fields.LIBRARY);
+
+        }else{
+            libraryCookie = userCookieImplDao.getCookieByUserNumAndTypeNoCheck(student, Fields.LIBRARY);
+
+        }
+        if (libraryCookie == null){
+            libraryCookie = userCookieImplDao.getOkCookieByUserNumAndType(student, Fields.LIBRARY);
+        }
+
+        String htmlBody = "";
+        try{
+            MediaType JSON = MediaType.get("application/json; charset=utf-8");
+            RequestBody requestBody = RequestBody.create(postData, JSON);
+            Request request = new Request.Builder()
+                    .url(url)
+                    .addHeader("cookie", libraryCookie.getUserCookies())
+                    .post(requestBody)
+                    .build();
+
+            Response response = client.newCall(request).execute();
+            htmlBody =  Objects.requireNonNull(response.body()).string();
+
+            if(!htmlBody.contains(effectiveSign) || response.code() != 200){
+                throw new Exception("cookies无效");
+            }
+
+        }catch (Exception e){
+            return postResponse(student, url, effectiveSign, postData, true);
+        }
+        return htmlBody;
+    }
+
+    public List<BorrowBookPO> getBorrowBookInfo(Student student) throws NoSuchMethodException, ScriptException, IOException {
+
+        String htmlBody = getResponse(student,
+                "https://172-20-135-5-8080.webvpn1.ecit.cn/reader/book_lst.php",
+                "注销");
 
         Document doc = Jsoup.parse(htmlBody);
         Element formElement = doc.getElementById("mylib_content");
@@ -112,4 +162,37 @@ public class LibraryDao {
         return result;
     }
 
+    public List<BookPO.BookBorrowInfo> getBooksNumByMarc(String marcNo) throws IOException, NoSuchMethodException, ScriptException {
+        String htmlBody = getResponse(new Student("201720180702", "ly19980911"),
+                "https://172-20-135-5-8080.webvpn1.ecit.cn/opac/ajax_item.php?marc_no=" + marcNo,
+                "图书明细");
+
+        List<BookPO.BookBorrowInfo> BookBorrowInfos = new ArrayList<>();
+
+        Document doc = Jsoup.parse(htmlBody);
+        Elements trEles = doc.getElementById("item").getElementsByTag("tr");
+
+        for (int i = 1; i < trEles.size(); i++) {
+            BookPO.BookBorrowInfo bookNum = new BookPO.BookBorrowInfo();
+            Elements tdEles = trEles.get(i).select("td");
+
+            bookNum.setIndexNum(tdEles.get(0).text());
+            bookNum.setBarcode(tdEles.get(1).text());
+            bookNum.setHoldings(tdEles.get(3).text());
+            bookNum.setState(tdEles.get(4).text());
+            BookBorrowInfos.add(bookNum);
+        }
+        return BookBorrowInfos;
+    }
+
+    public String getBooksByTitle(String object) throws IOException, NullPointerException, NoSuchMethodException, ScriptException {
+
+        String htmlBody = postResponse(new Student("201720180702", "ly19980911"),
+                "https://172-20-135-5-8080.webvpn1.ecit.cn/opac/ajax_search_adv.php",
+                "total",
+                object,
+                false);
+
+        return htmlBody;
+    }
 }

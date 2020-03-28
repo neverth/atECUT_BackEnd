@@ -22,7 +22,7 @@ public class UserCookieImplDaoTest {
     @Test
     public void selectByUserNumAndTypeTest() throws NoSuchMethodException, ScriptException, IOException {
         UserCookie userCookie = userCookieImplDao.getOkCookieByUserNumAndType(
-                new Student("201720180702", "ly19980911"), Fields.LIBRARY);
+                new Student("201720180702", "ly19980911"), Fields.NEWJW);
         System.out.println(userCookie);
     }
 
