@@ -1,7 +1,7 @@
 package cn.atecut.service;
 
 import cn.atecut.bean.User;
-import cn.atecut.bean.model.AuthServerCookies;
+import cn.atecut.bean.po.AuthServerCookies;
 import cn.atecut.dao.AuthServerCookiesDao;
 import cn.atecut.unti.AuthServerOp;
 import cn.atecut.unti.SerializableOkHttpCookies;

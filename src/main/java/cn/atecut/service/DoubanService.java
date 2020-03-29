@@ -13,7 +13,7 @@ public class DoubanService {
     @Autowired
     DoubanDao doubanDao;
 
-    private Logger logger = LogManager.getLogger(LibraryService.class);
+    private Logger logger = LogManager.getLogger(DoubanService.class);
 
     public String getBookInfoByIsbn(String isbn){
         JSONObject respJson = new JSONObject();

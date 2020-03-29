@@ -1,11 +1,15 @@
 package cn.atecut.result;
 
 
+import io.swagger.annotations.ApiModel;
 import org.springframework.http.HttpStatus;
 
 import java.io.Serializable;
 import java.util.HashMap;
 
+/**
+ * @author NeverTh
+ */
 public class Result<T> extends HashMap<String, Object> implements Serializable {
     /**
      *  成功时候的调用

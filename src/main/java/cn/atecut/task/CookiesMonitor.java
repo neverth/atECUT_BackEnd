@@ -18,7 +18,7 @@ public class CookiesMonitor {
     @Autowired
     private LibraryController libraryController;
 
-    @Scheduled(cron = "0 */9 * * * ?")
+    @Scheduled(cron = "0 */29 * * * ?")
     public void refreshCookiesTask(){
         logger.debug("模拟用户请求开始，当cookies无效时刷新cookies");
         libraryController.commonGetUserCookies(

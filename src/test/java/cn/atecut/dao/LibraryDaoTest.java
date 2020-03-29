@@ -1,52 +1,29 @@
 package cn.atecut.dao;
 
-
-import cn.atecut.unti.SerializableOkHttpCookies;
-import okhttp3.Cookie;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.omg.CORBA.OBJ_ADAPTER;
+import cn.atecut.bean.po.Student;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
 
-import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
+import javax.script.ScriptException;
+import java.io.IOException;
 
-
-@RunWith(SpringJUnit4ClassRunner.class)
-@WebAppConfiguration
-@ContextConfiguration(locations = {"classpath*:spring/spring*.xml"})
+@SpringBootTest
 public class LibraryDaoTest {
-
     @Autowired
     LibraryDao libraryDao;
 
     @Test
-    public void parseCookiesTest() throws IOException, ClassNotFoundException {
-        SerializableOkHttpCookies serializableOkHttpCookies = new SerializableOkHttpCookies(null);
-        String path = System.getProperties().getProperty("user.home")
-                + File.separator + ".atecut" + File.separator + "cookies" + File.separator
-                 + "201720180702cookies";
-        try{
-            FileInputStream fis = new FileInputStream(path);
-            ObjectInputStream ois = new ObjectInputStream(fis);
-            serializableOkHttpCookies.readObject(ois);
-            fis.close();
-            ois.close();
-        }catch (IOException | ClassNotFoundException e){
+    public void getBorrowBookInfoTest() throws NoSuchMethodException, ScriptException, IOException {
+        libraryDao.getBorrowBookInfo(new Student("201720180702", "ly19980911"));
+    }
 
-        }
-        List<Cookie> cookieList = serializableOkHttpCookies.getCookies();
-        System.out.println(cookieList.toString().length());
-
-        String temp = SerializableOkHttpCookies.parseCookies(cookieList);
-        System.out.println(temp);
-        System.out.println(temp.length());
-        List<Cookie> cookieList1 = SerializableOkHttpCookies.parseCookies(temp);
-        System.out.println(cookieList1.toString().length());
-
+    @Test
+    public void getBooksNumByMarcTest() throws IOException, NoSuchMethodException, ScriptException {
+        libraryDao.getBooksNumByMarc("53716638667671457a6f4863776950753333756e63673d3d");
+    }
+    @Test
+    public void getBooksByTitleTest() throws IOException, NoSuchMethodException, ScriptException {
+        libraryDao.getBooksByTitle("53716638667671457a6f4863776950753333756e63673d3d");
     }
 }

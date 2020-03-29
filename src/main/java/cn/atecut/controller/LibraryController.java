@@ -14,6 +14,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+
 import java.io.IOException;
 import java.util.List;
 
@@ -39,7 +40,8 @@ public class LibraryController {
     @RequestMapping(value = "book/{title}/{pageCount}",
             produces = "application/json; charset=UTF-8",
             method = RequestMethod.GET)
-    public @ResponseBody Result getBooksByTitle(@PathVariable("title") String title,
+    public @ResponseBody
+    Result getBooksByTitle(@PathVariable("title") String title,
                            @PathVariable("pageCount") int pageCount,
                            @RequestParam(value = "sortField", required=false) String sortField,
                            @RequestParam(value = "sortType", required=false) String sortType) {
@@ -92,7 +94,8 @@ public class LibraryController {
     @RequestMapping(value = "bookDetail/{marcNo}",
             produces = "application/json; charset=UTF-8",
             method = RequestMethod.GET)
-    public @ResponseBody Result getBookDetailByNo(@PathVariable("marcNo") String marcNo){
+    public @ResponseBody
+    Result getBookDetailByNo(@PathVariable("marcNo") String marcNo){
 
         List<Cookie> cookies = commonGetUserCookies(new User("201720180702", "ly19980911"));
         if (cookies == null){

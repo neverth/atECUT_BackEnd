@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="cn.atecut.dao.AuthServerCookiesDao" >
 
-    <resultMap id="BaseResultMap" type="cn.atecut.bean.model.AuthServerCookies" >
+    <resultMap id="BaseResultMap" type="cn.atecut.bean.po.AuthServerCookies" >
         <id column="id" property="id" />
         <result column="user_number" property="userNumber" />
         <result column="user_cookies" property="userCookies" />
@@ -27,7 +27,7 @@
         </where>
     </select>
 
-    <insert id="insertUserCookies" parameterType="cn.atecut.bean.model.AuthServerCookies"
+    <insert id="insertUserCookies" parameterType="cn.atecut.bean.po.AuthServerCookies"
             useGeneratedKeys="true" keyProperty="authServerCookies.id">
         insert into <include refid="tb"/> <include refid="Base_Column_List"/>
         values (#{authServerCookies.userNumber}, #{authServerCookies.userCookies},
@@ -35,14 +35,14 @@
     </insert>
 
 
-    <delete id="deleteUserCookies" parameterType="cn.atecut.bean.model.AuthServerCookies">
+    <delete id="deleteUserCookies" parameterType="cn.atecut.bean.po.AuthServerCookies">
         delete from <include refid="tb"/>
         <where>
             and user_number = #{authServerCookies.userNumber}
         </where>
     </delete>
 
-    <update id="updateUserCookies" parameterType="cn.atecut.bean.model.AuthServerCookies">
+    <update id="updateUserCookies" parameterType="cn.atecut.bean.po.AuthServerCookies">
         update <include refid="tb"></include>
         <set>
             user_cookies = #{authServerCookies.userCookies},
@@ -53,4 +53,5 @@
             and user_number = #{user.number}
         </where>
     </update>
+
 </mapper>

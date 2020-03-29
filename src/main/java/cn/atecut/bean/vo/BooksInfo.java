@@ -6,7 +6,7 @@ import lombok.Data;
 import java.util.List;
 
 /**
- * @author 华
+ * @author neverth
  */
 @Data
 public class BooksInfo {

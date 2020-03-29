@@ -1,7 +1,5 @@
 package cn.atecut.unti;
 
-import org.springframework.context.annotation.Bean;
-
 import javax.servlet.http.HttpServletRequest;
 
 

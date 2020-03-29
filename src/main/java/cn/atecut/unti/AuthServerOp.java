@@ -1,7 +1,9 @@
 package cn.atecut.unti;
 
-import cn.atecut.bean.AuthserverLoginInfo;
 import cn.atecut.bean.User;
+import cn.atecut.bean.po.Student;
+import cn.atecut.bean.pojo.UserCookie;
+import lombok.Data;
 import okhttp3.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -28,6 +30,17 @@ public class AuthServerOp {
     private OkHttpClient client;
 
     private Logger logger = LogManager.getLogger(AuthServerOp.class);
+
+    @Data
+    public class AuthserverLoginInfo {
+        private String lt;
+        private String dllt;
+        private String execution;
+        private String _eventId;
+        private String rmShown;
+        private String pwdDefaultEncryptSalt;
+        private String rememberMe;
+    }
 
     private AuthServerOp() {
         client = new OkHttpClient
@@ -178,6 +191,42 @@ public class AuthServerOp {
         return null;
     }
 
+    public List<Cookie> getUserValidCookies_new(Student user) throws IOException, ScriptException, NoSuchMethodException {
+
+        AuthserverLoginInfo loginInfo = getLoginedCookies();
+
+        String passwordAES = encryptPassword(user.getPassword(), loginInfo.getPwdDefaultEncryptSalt());
+
+        RequestBody requestBody = new FormBody.Builder()
+                .add("username", user.getNumber())
+                .add("password", passwordAES)
+                .add("lt", loginInfo.getLt())
+                .add("dllt", loginInfo.getDllt())
+                .add("execution", loginInfo.getExecution())
+                .add("_eventId", loginInfo.get_eventId())
+                .add("rmShown", loginInfo.getRmShown())
+                .add("rememberMe", loginInfo.getRememberMe())
+                .build();
+
+        Request request = new Request.Builder()
+                .url("https://authserver.ecut.edu.cn/authserver/login")
+                .post(requestBody)
+                .build();
+
+        Response response = client.newCall(request).execute();
+
+        if(AuthServerOp.isCookiesOk(cookies)){
+            for (Cookie cookie: cookies) {
+                if (cookie.name().equals("CASTGC")){
+                    ArrayList<Cookie> a = new ArrayList<>();
+                    a.add(cookie);
+                    return a;
+                }
+            }
+        }
+        return null;
+    }
+
     public static boolean isCookiesOk(List<Cookie> cookies) throws IOException {
         OkHttpClient client = new OkHttpClient
                 .Builder()
@@ -198,6 +247,21 @@ public class AuthServerOp {
                 .get()
                 .build();
 
+        Response response = client.newCall(request).execute();
+
+        String  ticketUrl = response.headers().get("Location");
+
+        return ticketUrl != null;
+    }
+
+    public static boolean isUserCookieOk(UserCookie cookie) throws IOException {
+        OkHttpClient client = RequestUtil.getOkHttpInstanceNotRedirect();
+
+        Request request = new Request.Builder()
+                .url("https://authserver.ecut.edu.cn/authserver/login?service=https%3A%2F%2Fehall.ecut.edu.cn%3A443%2Fpsfw%2Fsys%2Fpswdkbapp%2F*default%2Findex.do")
+                .addHeader("cookie", cookie.getUserCookies())
+                .get()
+                .build();
         Response response = client.newCall(request).execute();
 
         String  ticketUrl = response.headers().get("Location");

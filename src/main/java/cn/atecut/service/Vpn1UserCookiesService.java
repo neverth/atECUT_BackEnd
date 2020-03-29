@@ -2,8 +2,7 @@ package cn.atecut.service;
 
 
 import cn.atecut.bean.User;
-import cn.atecut.bean.model.Vpn1UserCookies;
-import cn.atecut.controller.LibraryController;
+import cn.atecut.bean.po.Vpn1UserCookies;
 import cn.atecut.dao.Vpn1UserCookiesDao;
 import cn.atecut.unti.SerializableOkHttpCookies;
 import cn.atecut.unti.WebVpnOneOp;
