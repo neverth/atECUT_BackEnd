@@ -14,6 +14,7 @@ import org.springframework.stereotype.Repository;
 import javax.script.ScriptException;
 import java.io.IOException;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author NeverTh
@@ -24,10 +25,17 @@ public class JwDao {
 
     private OkHttpClient client = RequestUtil.getOkHttpInstanceNotRedirect();
 
+    private AtomicInteger depth = new AtomicInteger(0);
+
     @Autowired
     private UserCookieImplDao userCookieImplDao;
 
     private String getEhallAppCookie(Student student, String type, boolean needNewCookie) throws NoSuchMethodException, ScriptException, IOException {
+
+        depth.incrementAndGet();
+        if (depth.get() > 2){
+            return null;
+        }
 
         String appConfigUrl = "";
         String  authServerUrl = "https://authserver.ecut.edu.cn/authserver/login?service=https%3A%2F%2Fehall.ecut.edu.cn%3A443%2Fpsfw%2Fsys%2Fpswdkbapp%2F*default%2Findex.do";

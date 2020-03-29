@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author neverth
@@ -32,6 +33,8 @@ public class LibraryDao {
     private static Logger logger = LogManager.getLogger(LibraryDao.class);
 
     private OkHttpClient client = RequestUtil.getOkHttpInstanceNotRedirect();
+
+    private AtomicInteger depth = new AtomicInteger(0);
 
     @Autowired
     private UserCookieImplDao userCookieImplDao;
@@ -77,6 +80,12 @@ public class LibraryDao {
                                  String effectiveSign,
                                  String postData,
                                  boolean needNewCookie) throws NoSuchMethodException, ScriptException, IOException {
+
+        depth.incrementAndGet();
+        if (depth.get() > 2){
+            return null;
+        }
+
         UserCookie libraryCookie = null;
 
         if(needNewCookie){
