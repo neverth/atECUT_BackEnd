@@ -1,10 +1,8 @@
-package cn.atecut.unti;
+package cn.atecut.util;
 
 import cn.atecut.bean.po.Student;
 import cn.atecut.bean.pojo.UserCookie;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
+import okhttp3.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -15,18 +13,19 @@ import java.util.Objects;
 /**
  * @author NeverTh
  */
-public class NewJwCookieOp {
-    private volatile static NewJwCookieOp instance;
+public class LibraryCookieOp {
 
-    private Logger logger = LogManager.getLogger(NewJwCookieOp.class);
+    private volatile static LibraryCookieOp instance;
 
-    private NewJwCookieOp() { }
+    private Logger logger = LogManager.getLogger(LibraryCookieOp.class);
 
-    public static NewJwCookieOp getInstance() {
+    private LibraryCookieOp() { }
+
+    public static LibraryCookieOp getInstance() {
         if (instance == null) {
-            synchronized (NewJwCookieOp.class) {
+            synchronized (LibraryCookieOp.class) {
                 if (instance == null) {
-                    instance = new NewJwCookieOp();
+                    instance = new LibraryCookieOp();
                 }
             }
         }
@@ -39,65 +38,49 @@ public class NewJwCookieOp {
         OkHttpClient client = RequestUtil.getOkHttpInstanceNotRedirect();
 
         Request request = new Request.Builder()
-                .url("https://172-20-130-13.webvpn1.ecit.cn/jwglxt/xtgl/index_cxYhxxIndex.html")
-                .addHeader("cookie", authServerCookie
-                        + webVpn1Cookie)
+                .url("https://172-20-135-5-8080.webvpn1.ecit.cn/reader/book_lst.php")
+                .addHeader("cookie", webVpn1Cookie)
                 .get()
                 .build();
 
         Response response = client.newCall(request).execute();
-        String jSession = null;
-        if (response.headers().get("Set-Cookie") != null){
-            jSession = response.headers().get("Set-Cookie").split(";")[0] + ";";
-        }
-
-        request = new Request.Builder()
-                .url("https://172-20-130-13.webvpn1.ecit.cn/sso/jziotlogin")
-                .addHeader("cookie", authServerCookie
-                        + webVpn1Cookie + jSession)
-                .get()
-                .build();
-
-        response = client.newCall(request).execute();
         String location = response.headers().get("Location");
-
+        String phpSession = response.headers().get("Set-Cookie").split(";")[0] + ";";
 
         for (int i = 0; i < 10; i++) {
-
-            if (response.headers().get("Set-Cookie") != null){
-                if (response.headers().get("Set-Cookie").contains("JSESSIONID")){
-                    jSession += response.headers().get("Set-Cookie").split(";")[0] + ";";
-                }
-            }
-
             if(location == null){
                 break;
+            }
+            String setCookie = response.headers().get("Set-Cookie");
+
+            if(setCookie != null){
+                phpSession = setCookie.split(";")[0] + ";";
             }
 
             request = new Request.Builder()
                     .url(location)
                     .addHeader("cookie", authServerCookie
-                            + webVpn1Cookie + jSession)
+                            + webVpn1Cookie + phpSession)
                     .get()
                     .build();
 
             response = client.newCall(request).execute();
             location = response.headers().get("Location");
         }
-        return jSession + webVpn1Cookie;
+        return phpSession + webVpn1Cookie;
     }
 
     public static boolean isUserCookieOk(UserCookie cookie) throws IOException {
         OkHttpClient client = RequestUtil.getOkHttpInstanceNotRedirect();
 
         Request request = new Request.Builder()
-                .url("https://172-20-130-13.webvpn1.ecit.cn/jwglxt/xtgl/index_cxNews.html")
+                .url("https://172-20-135-5-8080.webvpn1.ecit.cn/reader/ajax_class_sort.php")
                 .addHeader("cookie", cookie.getUserCookies())
                 .get()
                 .build();
         Response response = client.newCall(request).execute();
 
-        return Objects.requireNonNull(response.body()).string().contains("通知");
+        return !Objects.requireNonNull(response.body()).string().contains("Not login");
     }
 
     public static void main(String[] args) throws NoSuchMethodException, ScriptException, IOException {

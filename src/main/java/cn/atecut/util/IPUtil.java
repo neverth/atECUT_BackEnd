@@ -1,4 +1,4 @@
-package cn.atecut.unti;
+package cn.atecut.util;
 
 import javax.servlet.http.HttpServletRequest;
 

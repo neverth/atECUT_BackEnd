@@ -1,4 +1,4 @@
-package cn.atecut;
+package cn.atecut.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

@@ -6,10 +6,10 @@ import cn.atecut.result.CodeMsg;
 import cn.atecut.result.Result;
 import cn.atecut.service.AuthServerCookiesService;
 import com.alibaba.fastjson.JSONObject;
-import io.swagger.annotations.Api;
 import okhttp3.Cookie;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
 
 import java.util.HashMap;
 import java.util.List;
@@ -19,7 +19,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/authServer")
-@Api(value = "authServerCookies接口", tags = "authServerCookies接口")
+@ApiIgnore
 public class AuthServerController {
 
     @Autowired

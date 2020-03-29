@@ -1,4 +1,4 @@
-package cn.atecut.unti;
+package cn.atecut.util;
 
 import cn.atecut.bean.User;
 import cn.atecut.bean.pojo.UserCookie;

@@ -1,6 +1,6 @@
 package cn.atecut.dao;
 
-import cn.atecut.unti.RequestUtil;
+import cn.atecut.util.RequestUtil;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;

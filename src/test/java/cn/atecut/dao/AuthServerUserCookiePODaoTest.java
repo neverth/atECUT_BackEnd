@@ -3,7 +3,7 @@ package cn.atecut.dao;
 
 import cn.atecut.bean.User;
 import cn.atecut.bean.po.AuthServerCookies;
-import cn.atecut.unti.SerializableOkHttpCookies;
+import cn.atecut.util.SerializableOkHttpCookies;
 import okhttp3.Cookie;
 import org.junit.jupiter.api.Test;
 import org.mybatis.spring.annotation.MapperScan;
