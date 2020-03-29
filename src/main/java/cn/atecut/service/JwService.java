@@ -20,4 +20,8 @@ public class JwService {
     public String getEhallKbData(Student student, String reqData) throws NoSuchMethodException, ScriptException, IOException {
         return jwDao.getEhallKbData(student, reqData);
     }
+
+    public String getEhallScoreData(Student student, String reqData) throws NoSuchMethodException, ScriptException, IOException {
+        return jwDao.getEhallScoreData(student, reqData);
+    }
 }

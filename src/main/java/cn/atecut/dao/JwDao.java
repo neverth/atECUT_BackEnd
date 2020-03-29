@@ -111,6 +111,23 @@ public class JwDao {
         return Objects.requireNonNull(response.body()).string();
     }
 
+    public String getEhallScoreData(Student student, String reqData) throws NoSuchMethodException, ScriptException, IOException {
+        String ehallScoreCookie = getEhallAppCookie(student, Fields.EHALL_SCORE, false);
+
+        RequestBody requestBody = RequestBody.create(reqData,
+                MediaType.get("application/x-www-form-urlencoded; charset=UTF-8"));
+
+        Request request = new Request.Builder()
+                .url("https://ehall.ecut.edu.cn/psfw/sys/pscjcxapp/modules/cjcx/cxxscj.do")
+                .addHeader("cookie", ehallScoreCookie)
+                .addHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
+                .post(requestBody)
+                .build();
+
+        Response response = client.newCall(request).execute();
+        return Objects.requireNonNull(response.body()).string();
+    }
+
     public static void main(String[] args) {
 
     }

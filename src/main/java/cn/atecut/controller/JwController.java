@@ -4,6 +4,7 @@ package cn.atecut.controller;
 import cn.atecut.bean.po.Student;
 import cn.atecut.bean.pojo.Result;
 import cn.atecut.bean.resq.EhallKbGetParams;
+import cn.atecut.bean.resq.EhallScoreGetParams;
 import cn.atecut.result.CodeMsg;
 import cn.atecut.service.JwService;
 import com.alibaba.fastjson.JSONObject;
@@ -39,6 +40,27 @@ public class JwController {
                     new Student(ehallKbGetParams.getNumber(),
                             ehallKbGetParams.getPassword()),
                     ehallKbGetParams.toString());
+
+        } catch (NoSuchMethodException | IOException | ScriptException e) {
+            e.printStackTrace();
+            return Result.error(CodeMsg.SERVER_ERROR);
+        }
+        if(result != null){
+            return Result.success(JSONObject.parseObject(result));
+        }
+        return Result.error(CodeMsg.PARAM_ERROR);
+    }
+
+    @PostMapping("/ehall/score/get")
+    @ApiOperation(value = "获得学生ehall平台的成绩", notes = "获得学生ehall平台的成绩")
+    public Result<JSONObject> getEhallScoreData(
+            @Valid @RequestBody EhallScoreGetParams ehallScoreGetParams){
+        String result;
+        try {
+            result = jwService.getEhallScoreData(
+                    new Student(ehallScoreGetParams.getNumber(),
+                            ehallScoreGetParams.getPassword()),
+                    ehallScoreGetParams.toString());
 
         } catch (NoSuchMethodException | IOException | ScriptException e) {
             e.printStackTrace();
