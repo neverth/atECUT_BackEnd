@@ -1,69 +1,61 @@
 package cn.atecut.dao;
 
-import cn.atecut.unti.WebVpnOneOp;
-import okhttp3.*;
+import cn.atecut.unti.RequestUtil;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.io.IOException;
+import java.util.Objects;
 
 /**
  * @author liyang
  */
 @Repository
 public class DoubanDao {
-    private static Logger logger = LogManager.getLogger(WebVpnOneOp.class);
+    private static Logger logger = LogManager.getLogger(DoubanDao.class);
 
     private static OkHttpClient client;
 
-    private static int maxErrorTimes;
-
-    private String number;
-
-
     public DoubanDao() {
-        client = new OkHttpClient
-                .Builder()
-                .cookieJar(new CookieJar() {
-                    @Override
-                    public void saveFromResponse(@NotNull HttpUrl httpUrl, @NotNull List<Cookie> list) { }
-
-                    @NotNull
-                    @Override
-                    public List<Cookie> loadForRequest(@NotNull HttpUrl httpUrl) {
-                        String urlStr = httpUrl.url().toString();
-                        if(urlStr.contains("https://book.douban.com/subject/")){
-                            number = urlStr.substring(urlStr.indexOf("/subject/") + 9, urlStr.length() - 1);
-
-                            return null;
-                        }
-                        return new ArrayList<>();
-                    }
-                })
-                .build();
+        client = RequestUtil.getOkHttpInstanceNotRedirect();
     }
 
-    public String getNumByISBN(String isbn){
+    public String getNumByISBN(String isbn) throws IOException {
+
         Request request = new Request.Builder()
                 .url("https://book.douban.com/isbn/" + isbn)
                 .get()
                 .build();
+
+        String location = "";
         Response response = null;
-        try {
+
+        for (int i = 0; i < 10; i++) {
             response = client.newCall(request).execute();
-            String result = response.body().string();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return number;
+            location = response.headers().get("Location");
+
+            if(location == null){
+                return null;
+            }
+
+            if (location.contains("https://book.douban.com/subject/")){
+                break;
+            }
+            request = new Request.Builder()
+                    .url(location)
+                    .get()
+                    .build();
         }
 
-        return null;
+        return location.substring(location.indexOf("/subject/") + 9, location.length() - 1);
     }
 
-    public String  getBookInfoByNum(String number){
+    public String getBookInfoByNum(String number) throws IOException {
+
         Request request = new Request.Builder()
                 .url("https://m.douban.com/rexxar/api/v2/book/" +
                         number + "?ck=&for_mobile=1")
@@ -74,18 +66,17 @@ public class DoubanDao {
                 .addHeader("Referer", "https://m.douban.com/book/subject/" +
                         number + "/")
                 .build();
-        Response response = null;
-        String result = null;
-        try {
-            response = client.newCall(request).execute();
-            result = response.body().string();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return result;
+
+        Response response = client.newCall(request).execute();
+        return Objects.requireNonNull(response.body()).string();
     }
 
-    public String getBookInfoByIsbn(String isbn){
+    public String getBookInfoByIsbn(String isbn) throws IOException {
         return getBookInfoByNum(getNumByISBN(isbn));
+    }
+
+    public static void main(String[] args) throws IOException {
+        DoubanDao doubanDao = new DoubanDao();
+        System.out.println(doubanDao.getBookInfoByIsbn("9787532125944"));
     }
 }

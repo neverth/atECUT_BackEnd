@@ -1,22 +1,14 @@
 package cn.atecut.dao;
 
-import cn.atecut.bean.BookInfo;
-import cn.atecut.bean.User;
 import cn.atecut.bean.po.BookPO;
 import cn.atecut.bean.po.BorrowBookPO;
 import cn.atecut.bean.po.Student;
 import cn.atecut.bean.pojo.Fields;
 import cn.atecut.bean.pojo.UserCookie;
-import cn.atecut.bean.vo.BooksInfo;
-import cn.atecut.bean.vo.BorrowBookVO;
 import cn.atecut.unti.RequestUtil;
-import cn.atecut.unti.SerializableOkHttpCookies;
-import cn.atecut.unti.WebVpnOneOp;
-import com.alibaba.fastjson.JSONObject;
 import okhttp3.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jetbrains.annotations.NotNull;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -25,16 +17,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import javax.script.ScriptException;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 /**
- * @author 华
+ * @author neverth
  */
 
 @Repository

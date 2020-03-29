@@ -1,50 +1,79 @@
 package cn.atecut.controller;
 
-import cn.atecut.bean.BookInfo;
-import cn.atecut.bean.User;
-import cn.atecut.bean.vo.BooksInfo;
-import cn.atecut.result.Result;
-import cn.atecut.service.LibraryImproveService;
-import cn.atecut.service.Vpn1UserCookiesService;
+import cn.atecut.bean.po.Student;
+import cn.atecut.bean.vo.BookVO;
+import cn.atecut.bean.vo.BorrowBookVO;
+import cn.atecut.result.CodeMsg;
+import cn.atecut.bean.pojo.Result;
+import cn.atecut.service.LibraryService;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import okhttp3.Cookie;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import javax.script.ScriptException;
 import java.io.IOException;
 import java.util.List;
 
-
-/*
+/**
  * @author NeverTh
- * @description //TODO
- * @date 15:57 2019/12/4
  */
-
-@RequestMapping("restfulApi/library")
-@Controller
+@RequestMapping("/library")
+@RestController
+@Api(value = "图书馆接口", tags = "图书馆接口")
 public class LibraryController {
 
     @Autowired
-    private LibraryImproveService libraryImproveService;
+    LibraryService libraryService;
 
-    @Autowired
-    private Vpn1UserCookiesService vpn1UserCookiesService;
+    @PostMapping("/borrowedBooks/get")
+    @ApiOperation(value = "获得学生借阅信息", notes = "获得学生借阅信息")
+    public Result<List<BorrowBookVO>> getStuBorrowBookInfo(@RequestBody Student student){
+        List<BorrowBookVO> borrowBookVOS;
+        try {
+            borrowBookVOS = libraryService.getStuBorrowBookInfo(student);
 
-    private static Logger logger = LogManager.getLogger(LibraryController.class);
+        } catch (NoSuchMethodException | ScriptException | IOException e) {
+            e.printStackTrace();
+            return Result.error(CodeMsg.SERVER_ERROR);
+        }
+        if(borrowBookVOS != null){
+            return Result.success(borrowBookVOS);
+        }
+        return Result.error(CodeMsg.PARAM_ERROR);
+    }
 
-    @RequestMapping(value = "book/{title}/{pageCount}",
-            produces = "application/json; charset=UTF-8",
-            method = RequestMethod.GET)
-    public @ResponseBody
-    Result getBooksByTitle(@PathVariable("title") String title,
-                           @PathVariable("pageCount") int pageCount,
-                           @RequestParam(value = "sortField", required=false) String sortField,
-                           @RequestParam(value = "sortType", required=false) String sortType) {
+    @GetMapping(value = "/BookBorrowInfo/{marcNo}")
+    @ApiOperation(value = "根据marcNo条形码获得馆藏信息", notes = "根据marcNo条形码获得馆藏信息")
+    public Result<List<BookVO.BookBorrowInfo>> getBookDetailByNo(
+           @ApiParam(value = "marcNo", example = "53716638667671457a6f4863776950753333756e63673d3d", required = true)
+           @PathVariable("marcNo") String marcNo){
+
+        List<BookVO.BookBorrowInfo> borrowBookVOS;
+
+        try {
+            borrowBookVOS = libraryService.getBooksNumByMarc(marcNo);
+        } catch (NoSuchMethodException | ScriptException | IOException e) {
+            e.printStackTrace();
+            return Result.error(CodeMsg.SERVER_ERROR);
+        }
+        if(borrowBookVOS != null){
+            return Result.success(borrowBookVOS);
+        }
+        return Result.error(CodeMsg.PARAM_ERROR);
+    }
+    @GetMapping(value = "book/{title}/{pageCount}")
+    @ApiOperation(value = "根据title查询图书信息", notes = "根据title查询图书信息")
+    public Result<JSONObject> getBooksByTitle(
+            @ApiParam(value = "标题", example = "活着", required = true)
+            @PathVariable("title") String title,
+            @ApiParam(value = "页码", example = "1", required = true)
+            @PathVariable("pageCount") int pageCount,
+            @ApiParam(value = "相关度依据", example = "relevance")
+            @RequestParam(value = "sortField", required=false) String sortField,
+            @ApiParam(value = "排序顺序", example = "desc")
+            @RequestParam(value = "sortType", required=false) String sortType) throws NoSuchMethodException, ScriptException, IOException {
 
         // fastJson竟然还不支持流式计算
         JSONObject requestJson = new JSONObject();
@@ -75,73 +104,17 @@ public class LibraryController {
             requestJson.put("sortType", sortType);
         }
 
-        List<Cookie> cookies = commonGetUserCookies(new User("201720180702", "ly19980911"));
-        if (cookies == null){
-            return Result.error("服务当前不可用，稍后试试");
-        }
-        BooksInfo booksInfo;
+        String result = "";
         try {
-            booksInfo = libraryImproveService.getBooksByTitle(
-                        cookies, requestJson);
-            return Result.success(booksInfo);
-        } catch (IOException e) {
-            logger.debug(e.getMessage());
+            result = libraryService.getBooksByTitle(requestJson.toString());
+
+        } catch (NoSuchMethodException | ScriptException | IOException e) {
             e.printStackTrace();
-            return Result.error("服务当前不可用，稍后试试");
+            return Result.error(CodeMsg.SERVER_ERROR);
         }
-    }
-
-    @RequestMapping(value = "bookDetail/{marcNo}",
-            produces = "application/json; charset=UTF-8",
-            method = RequestMethod.GET)
-    public @ResponseBody
-    Result getBookDetailByNo(@PathVariable("marcNo") String marcNo){
-
-        List<Cookie> cookies = commonGetUserCookies(new User("201720180702", "ly19980911"));
-        if (cookies == null){
-            return Result.error("服务当前不可用，稍后试试");
+        if(result != null){
+            return Result.success(JSONObject.parseObject(result));
         }
-
-        List<BookInfo.BookNum> bookNumList;
-        try {
-            bookNumList = libraryImproveService.getBookDetailByNo(cookies, marcNo);
-            return Result.success(bookNumList);
-        } catch (IOException e) {
-            logger.debug(e.getMessage());
-            e.printStackTrace();
-            return Result.error();
-        }
-    }
-
-    public List<Cookie> commonGetUserCookies(User user){
-        List<Cookie> cookies =
-                vpn1UserCookiesService.getUserCookiesFromDataBase(user);
-
-        if(!libraryImproveService.isCookiesValid(cookies)){
-            List<Cookie> newCookies = null;
-
-            try {
-                newCookies = vpn1UserCookiesService.getUserCookiesNew(user);
-                if(cookies.size() == 0){
-                    if(vpn1UserCookiesService.putCookiesToDataBase(user, newCookies) > 0){
-                        logger.debug("向数据库中插入cookies");
-                    }else{
-                        logger.debug("向数据库中插入cookies失败");
-                    }
-                }else{
-                    if(vpn1UserCookiesService.updateUserCookies(
-                            user, newCookies, 1) > 0){
-                        logger.debug("数据库中用户cookies已经更新");
-                    }else{
-                        logger.debug("数据库中用户cookies更新失败");
-                    }
-                }
-            } catch (Exception e) {
-                logger.debug(e.getMessage());
-                return null;
-            }
-            return newCookies;
-        }
-        return cookies;
+        return Result.error(CodeMsg.PARAM_ERROR);
     }
 }
