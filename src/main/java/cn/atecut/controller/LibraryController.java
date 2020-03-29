@@ -63,6 +63,7 @@ public class LibraryController {
         }
         return Result.error(CodeMsg.PARAM_ERROR);
     }
+
     @GetMapping(value = "book/{title}/{pageCount}")
     @ApiOperation(value = "根据title查询图书信息", notes = "根据title查询图书信息")
     public Result<JSONObject> getBooksByTitle(

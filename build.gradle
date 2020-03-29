@@ -41,8 +41,6 @@ dependencies {
 
     compile group: 'com.squareup.okhttp3', name: 'okhttp', version: '4.2.0'
 
-    compile group: 'org.json', name: 'json', version: '20180813'
-
     compile group: 'com.alibaba', name: 'fastjson', version: '1.2.62'
 
     compile group: 'org.jsoup', name: 'jsoup', version: '1.11.3'
