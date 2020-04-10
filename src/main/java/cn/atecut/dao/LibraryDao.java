@@ -81,10 +81,10 @@ public class LibraryDao {
                                  String postData,
                                  boolean needNewCookie) throws NoSuchMethodException, ScriptException, IOException {
 
-        depth.incrementAndGet();
-        if (depth.get() > 2){
-            return null;
-        }
+//        depth.incrementAndGet();
+//        if (depth.get() > 2){
+//            return null;
+//        }
 
         UserCookie libraryCookie = null;
 

@@ -32,10 +32,10 @@ public class JwDao {
 
     private String getEhallAppCookie(Student student, String type, boolean needNewCookie) throws NoSuchMethodException, ScriptException, IOException {
 
-        depth.incrementAndGet();
-        if (depth.get() > 2){
-            return null;
-        }
+//        depth.incrementAndGet();
+//        if (depth.get() > 2){
+//            return null;
+//        }
 
         String appConfigUrl = "";
         String  authServerUrl = "https://authserver.ecut.edu.cn/authserver/login?service=https%3A%2F%2Fehall.ecut.edu.cn%3A443%2Fpsfw%2Fsys%2Fpswdkbapp%2F*default%2Findex.do";
