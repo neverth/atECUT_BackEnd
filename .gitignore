@@ -31,4 +31,4 @@ out/
 ### VS Code ###
 .vscode/
 
-python_temp/.idea
+python/.idea

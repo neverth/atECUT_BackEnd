@@ -273,4 +273,9 @@ public class WebVpnOneOp {
         String htmlBody =  Objects.requireNonNull(response.body()).string();
         return htmlBody.contains("书刊状态");
     }
+
+    public static void main(String[] args) throws IOException {
+        WebVpnOneOp instance = WebVpnOneOp.getInstance();
+        instance.getUserValidCookies(new User("201720180702", "ly19980911"));
+    }
 }
