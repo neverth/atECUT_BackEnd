@@ -13,6 +13,7 @@ pool = PooledDB(pymysql, mincached=1, maxcached=10, host='121.36.21.125',
                 user='atecut', passwd='pKSJzbnCjNC78rJ5',
                 db='atecut', port=3306)
 
+
 class AuthServer:
     @staticmethod
     def encryptPassword(_password, _aesKey):
@@ -77,8 +78,9 @@ class AuthServer:
 
         conn = pool.connection()
         cursor = conn.cursor()
-        cursor.execute('INSERT INTO cookies (user_number, user_cookies, type, creat_time, version) VALUES ({}, {}, {}, {}, {})'
-                       .format(_studentNum, cookiesStr, 'jwxt', cookiesStr, ))
+        cursor.execute(
+            'INSERT INTO cookies (user_number, user_cookies, type, creat_time, version) VALUES ({}, {}, {}, {}, {})'
+            .format(_studentNum, cookiesStr, 'jwxt', cookiesStr, ))
         res = cursor.fetchall()
 
         return
@@ -88,15 +90,12 @@ if __name__ == '__main__':
     # AuthServer.studentLogin('201720180702', 'ly19980911',
     #                         'https://authserver-ecut-edu-cn-443.webvpn1.ecit.cn/authserver/login?service=https%3A%2F%2Fjwxt-ecut-edu-cn-18801.webvpn1.ecit.cn%3A443%2Fcaslogin.jsp')
 
-
     conn = pool.connection()
     cursor = conn.cursor()
-    sql = "INSERT INTO cookies (user_number, user_cookies, type, creat_time, version) VALUES ('{}', '{}', '{}', '{}', 1)".\
+    sql = "INSERT INTO cookies (user_number, user_cookies, type, creat_time, version) VALUES ('{}', '{}', '{}', '{}', 1)". \
         format('_studentNum', 'cookiesStr', 'jwxt', datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
-
     a = cursor.execute(sql)
-
 
     print()
 
